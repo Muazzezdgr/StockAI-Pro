@@ -1,7 +1,5 @@
 # 📈 StockAI Pro — Hisse Senedi Yön Tahmini
-**Yapay Zeka 2 | Final Projesi | Proje Kodu: C-5**
 
-Grup: Muazzez Doğru (271) · Yunus Emre Kaymakcı (221) · Elif Yıldırım (220)
 
 ---
 
@@ -95,8 +93,6 @@ python -m streamlit run app.py
 
 ---
 
-## 📦 Teslim Edilen Dosyalar
-
 | # | Dosya | Açıklama |
 |---|-------|----------|
 | 1 | `stock_prediction_pro.ipynb` | Tüm kodlar (veri, model, sonuç) |
@@ -115,10 +111,4 @@ python -m streamlit run app.py
 
 ---
 
-## 👥 Grup Bilgileri
 
-| Öğrenci | No | Sorumluluk |
-|---------|-----|-----------|
-| Muazzez Doğru | 90240000271 | Proje koordinasyonu, Streamlit arayüz |
-| Yunus Emre Kaymakcı | 90240000221 | LSTM + RF model geliştirme |
-| Elif Yıldırım | 90240000220 | Veri işleme, NLP, Colab notebook |
