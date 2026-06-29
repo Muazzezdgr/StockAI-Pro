@@ -1,0 +1,17 @@
+StockAI Pro — Veri Seti Bilgisi
+================================
+
+Veri Kaynağı: Yahoo Finance API (yfinance)
+Kütüphane: yfinance >= 0.2.36
+Kurulum: pip install yfinance
+
+Desteklenen Hisseler:
+- ABD: AAPL, TSLA, NVDA, MSFT, GOOGL, AMZN, META, NFLX
+- BIST: THYAO.IS, GARAN.IS, ASELS.IS, KCHOL.IS, EREGL.IS
+
+Veri Erişimi:
+https://finance.yahoo.com
+https://pypi.org/project/yfinance/
+
+NOT: Veri seti 50 MB üzerinde olduğundan dosya olarak eklenmemiştir.
+Uygulama çalıştırıldığında otomatik olarak internetten çekilir.
