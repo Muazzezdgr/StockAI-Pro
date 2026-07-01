@@ -27,7 +27,7 @@ def _card(col, label, value, sub="", color=None):
           <div style="color:{color};font-size:0.74rem;">{sub}</div>
         </div>""", unsafe_allow_html=True)
 
-def show_backtest(symbol, period):
+def show_backtest(symbol, period, interval="1d"):
     st.markdown('<p class="section-title">// STRATEJİ BACKTEST SİMÜLASYONU</p>',
                 unsafe_allow_html=True)
 
@@ -53,7 +53,7 @@ def show_backtest(symbol, period):
         return
 
     with st.spinner("📊  Veri ve model hazırlanıyor..."):
-        df = fetch_stock_data(symbol, period)
+        df = fetch_stock_data(symbol, period, interval=interval)
         if df.empty:
             st.error("❌  Veri alınamadı."); return
         X_train,X_test,y_train,y_test,scaler,_ = prepare_rf_data(df)

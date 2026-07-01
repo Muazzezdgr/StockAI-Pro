@@ -18,11 +18,16 @@ def is_crypto_symbol(symbol: str) -> bool:
 
 # ─── Veri Çekme ─────────────────────────────────────────────────────────────
 
-def fetch_stock_data(symbol: str, period: str = "2y") -> pd.DataFrame:
+def fetch_stock_data(symbol: str, period: str = "2y", interval: str = "1d") -> pd.DataFrame:
     """yfinance ile hisse/kripto verisi çek ve teknik göstergeleri hesapla."""
     try:
+        effective_interval = interval if interval in {"1d", "1h"} else "1d"
+        effective_period = period
+        if effective_interval == "1h":
+            effective_period = "2y"
+
         ticker = yf.Ticker(symbol)
-        df = ticker.history(period=period, interval="1d", auto_adjust=True)
+        df = ticker.history(period=effective_period, interval=effective_interval, auto_adjust=True)
         if df.empty:
             return pd.DataFrame()
         df = df[["Open", "High", "Low", "Close", "Volume"]].copy()
@@ -176,6 +181,11 @@ def prepare_lstm_data(df: pd.DataFrame, window: int = 30, test_ratio: float = 0.
     feat_df = feat_df.iloc[:-1]
     target  = target.iloc[:-1]
 
+    if len(feat_df) <= window:
+        scaler = MinMaxScaler()
+        scaled = scaler.fit_transform(feat_df)
+        return np.empty((0, window, scaled.shape[1])), np.empty((0, window, scaled.shape[1])), np.array([]), np.array([]), scaler
+
     scaler = MinMaxScaler()
     scaled = scaler.fit_transform(feat_df)
 
@@ -185,6 +195,8 @@ def prepare_lstm_data(df: pd.DataFrame, window: int = 30, test_ratio: float = 0.
         y.append(target.iloc[i])
 
     X, y = np.array(X), np.array(y)
+    if len(X) == 0:
+        return np.empty((0, window, scaled.shape[1])), np.empty((0, window, scaled.shape[1])), np.array([]), np.array([]), scaler
     split = int(len(X) * (1 - test_ratio))
     return X[:split], X[split:], y[:split], y[split:], scaler
 

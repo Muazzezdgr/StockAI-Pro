@@ -212,8 +212,13 @@ with st.sidebar:
         symbols = ["BTC-USD", "ETH-USD", "BNB-USD", "ADA-USD", "SOL-USD", "XRP-USD", "DOGE-USD", "LTC-USD"]
 
     selected_symbol = st.selectbox("Sembol", symbols)
-    period = st.selectbox("Veri Periyodu", ["1y", "2y", "3y", "5y"], index=1)
+    selected_period = st.selectbox("Veri Periyodu", ["1h", "1y", "2y", "3y", "5y"], index=1)
+    interval = "1h" if selected_period == "1h" else "1d"
+    effective_period = "2y" if interval == "1h" else selected_period
     window_size = st.slider("LSTM Pencere Boyutu", 20, 60, 30)
+
+    if selected_period == "1h":
+        st.info("⚠️ Saatlik veri daha güncel sinyaller verir ancak kısa vadeli gürültüye (noise) daha duyarlıdır; model güven skorunu buna göre yorumlayın.")
 
     st.markdown("---")
     run_analysis = st.button("🚀  ANALİZİ BAŞLAT", use_container_width=True)
@@ -221,16 +226,16 @@ with st.sidebar:
 # ── Route to pages ───────────────────────────────────────────────────────────
 if "📊" in page:
     from pages.dashboard import show_dashboard
-    show_dashboard(selected_symbol, period, window_size, run_analysis)
+    show_dashboard(selected_symbol, effective_period, window_size, run_analysis, interval=interval)
 elif "🤖" in page:
     from pages.model_training import show_model_training
-    show_model_training(selected_symbol, period, window_size)
+    show_model_training(selected_symbol, effective_period, window_size, interval=interval)
 elif "📰" in page:
     from pages.news_analysis import show_news_analysis
     show_news_analysis(selected_symbol)
 elif "📈" in page:
     from pages.backtest import show_backtest
-    show_backtest(selected_symbol, period)
+    show_backtest(selected_symbol, effective_period, interval=interval)
 elif "📋" in page:
     from pages.about import show_about
     show_about()

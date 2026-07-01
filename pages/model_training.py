@@ -51,7 +51,7 @@ def _base_layout(title="", height=350, **extra):
     return d
 
 # ════════════════════════════════════════════════════════════════════════════
-def show_model_training(symbol, period, window_size):
+def show_model_training(symbol, period, window_size, interval="1d"):
     st.markdown('<p class="section-title">// MODEL EĞİTİMİ & DEĞERLENDİRME</p>',
                 unsafe_allow_html=True)
 
@@ -86,7 +86,7 @@ def show_model_training(symbol, period, window_size):
 
     # ── Veri çek ─────────────────────────────────────────────────────────────
     with st.spinner(f"📡  {symbol} verisi çekiliyor..."):
-        df = fetch_stock_data(symbol, period)
+        df = fetch_stock_data(symbol, period, interval=interval)
     if df.empty:
         st.error("❌  Veri alınamadı."); return
 

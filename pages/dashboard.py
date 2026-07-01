@@ -62,14 +62,14 @@ def pl(title="", height=350, **extra):
     return base
 
 # ════════════════════════════════════════════════════════════════════════════
-def show_dashboard(symbol, period, window_size, run_analysis):
+def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
     st.markdown('<p class="section-title">// ANA DASHBOARD</p>',
                 unsafe_allow_html=True)
     if not run_analysis:
         _welcome(); return
 
     with st.spinner(f"📡  {symbol} verisi çekiliyor..."):
-        df = fetch_stock_data(symbol, period)
+        df = fetch_stock_data(symbol, period, interval=interval)
     if df.empty:
         st.error(f"❌  {symbol} için veri alınamadı."); return
 
