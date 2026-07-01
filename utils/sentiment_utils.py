@@ -52,8 +52,11 @@ def fetch_news(symbol: str, api_key: str = None, days_back: int = 7) -> list:
     if not api_key or api_key == "YOUR_API_KEY":
         return get_demo_news(symbol)
 
-    clean_symbol = symbol.replace(".IS", "").replace(".F", "")
-    query = f"{clean_symbol} stock"
+    clean_symbol = symbol.replace(".IS", "").replace(".F", "").replace("-USD", "").replace("-USDT", "")
+    if symbol.upper().endswith("-USD") or symbol.upper().endswith("-USDT"):
+        query = f"{clean_symbol} cryptocurrency"
+    else:
+        query = f"{clean_symbol} stock"
     from_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
     url = (
         f"https://newsapi.org/v2/everything"

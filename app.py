@@ -1,3 +1,4 @@
+
 import streamlit as st
 
 st.set_page_config(
@@ -199,16 +200,18 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown('<p class="section-title">Hisse Seçimi</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title">Sembol Seçimi</p>', unsafe_allow_html=True)
 
-    market = st.selectbox("Piyasa", ["ABD (NASDAQ/NYSE)", "BIST (Türkiye)"])
+    market = st.selectbox("Piyasa", ["ABD (NASDAQ/NYSE)", "BIST (Türkiye)", "Kripto Para"])
 
     if "ABD" in market:
         symbols = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "NFLX"]
-    else:
+    elif "BIST" in market:
         symbols = ["THYAO.IS", "GARAN.IS", "ASELS.IS", "KCHOL.IS", "EREGL.IS", "BIMAS.IS", "SISE.IS", "TUPRS.IS"]
+    else:
+        symbols = ["BTC-USD", "ETH-USD", "BNB-USD", "ADA-USD", "SOL-USD", "XRP-USD", "DOGE-USD", "LTC-USD"]
 
-    selected_symbol = st.selectbox("Hisse Senedi", symbols)
+    selected_symbol = st.selectbox("Sembol", symbols)
     period = st.selectbox("Veri Periyodu", ["1y", "2y", "3y", "5y"], index=1)
     window_size = st.slider("LSTM Pencere Boyutu", 20, 60, 30)
 

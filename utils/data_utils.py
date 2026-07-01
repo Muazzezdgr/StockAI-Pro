@@ -8,13 +8,21 @@ import yfinance as yf
 from datetime import datetime, timedelta
 
 
+def is_crypto_symbol(symbol: str) -> bool:
+    """Kripto para sembolü mü? (yfinance formatı: BTC-USD, ETH-USD, vb.)"""
+    if not symbol or not isinstance(symbol, str):
+        return False
+    symbol = symbol.strip().upper()
+    return symbol.endswith("-USD") or symbol.endswith("-USDT") or symbol.endswith("-BTC")
+
+
 # ─── Veri Çekme ─────────────────────────────────────────────────────────────
 
 def fetch_stock_data(symbol: str, period: str = "2y") -> pd.DataFrame:
-    """yfinance ile hisse verisi çek ve teknik göstergeleri hesapla."""
+    """yfinance ile hisse/kripto verisi çek ve teknik göstergeleri hesapla."""
     try:
         ticker = yf.Ticker(symbol)
-        df = ticker.history(period=period, auto_adjust=True)
+        df = ticker.history(period=period, interval="1d", auto_adjust=True)
         if df.empty:
             return pd.DataFrame()
         df = df[["Open", "High", "Low", "Close", "Volume"]].copy()
@@ -27,14 +35,22 @@ def fetch_stock_data(symbol: str, period: str = "2y") -> pd.DataFrame:
 
 
 def get_ticker_info(symbol: str) -> dict:
-    """Hisse temel bilgileri."""
+    """Hisse/kripto temel bilgileri."""
     try:
         t = yf.Ticker(symbol)
-        info = t.info
+        info = t.info or {}
+        clean_name = symbol.replace(".IS", "").replace(".F", "")
+        if is_crypto_symbol(symbol):
+            clean_name = clean_name.replace("-USD", "").replace("-USDT", "")
+            sector = "Kripto Para"
+            industry = "Dijital Varlık"
+        else:
+            sector = info.get("sector", "—")
+            industry = info.get("industry", "—")
         return {
-            "name": info.get("longName", symbol),
-            "sector": info.get("sector", "—"),
-            "industry": info.get("industry", "—"),
+            "name": info.get("longName", clean_name),
+            "sector": sector,
+            "industry": industry,
             "market_cap": info.get("marketCap", None),
             "pe_ratio": info.get("trailingPE", None),
             "52w_high": info.get("fiftyTwoWeekHigh", None),
