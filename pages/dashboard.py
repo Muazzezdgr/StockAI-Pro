@@ -144,6 +144,27 @@ def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
     _card(c4, "🎯 Model Güven", f"{pred_prob*100:.1f}%",
           sub="🟢 YUKARI" if pred_prob>0.5 else "🔴 AŞAĞI",
           color=C["green"] if pred_prob>0.5 else C["red"])
+    with c4:
+        with st.expander("Model Güven Açıklaması", expanded=False):
+            st.write("Model güven skoru aşağıdaki şekilde üretilir ve yorumlanmalıdır:")
+            st.write("1) Skorun kaynağı: Bu skor, Random Forest sınıflandırıcısının" \
+                     "test setindeki en son örnek için hesapladığı " \
+                     "sınıf 1 (yukarı) olasılığıdır. Kodda model train_random_forest() ile" \
+                     "eğitilir ve model.predict_proba(X_test)[:, 1] kullanılarak elde edilir.")
+            st.write("2) Kullanılan girdiler: Model, prepare_rf_data() ile hazırlanan 21 teknik gösterge" \
+                     "özelliği üzerinden çalışır; bu özellikler StandardScaler ile ölçeklendirilir." )
+            st.write("3) Sinyal hesaplama ile ilişkisi: Uygulamada model olasılığı compute_signal()" \
+                     "fonksiyonunda skora katkı sağlar; kodda skora (pred_prob - 0.5) * 4" \
+                     "ile ek bir ağırlık eklenir, dolayısıyla olasılık 0.5 etrafındaki sapmalar" \
+                     "sinyal üzerinde orantılı etki yapar.")
+            st.write("4) Yorum ve sınırlamalar: Bu olasılık bir kesinlik garantisi değildir;" \
+                     "istatistiksel bir tahmindir ve modelin geçmiş test verisindeki performansına" \
+                     "dayanmaktadır. Değerlendirilen metrikler (örneğin doğruluk ve AUC)" \
+                     "evaluate_model fonksiyonunda hesaplanır ancak tek bir örnek için verilen" \
+                     "olasılık gerçek dünya belirsizliklerini tamamen yansıtmaz.")
+            st.write("5) Düşük skor uyarısı: Skorun 50% altı olması modelin belirsiz veya zayıf" \
+                     "bir öngörü verdiğini gösterebilir; bu durumda ek göstergelere, haber" \
+                     "duygu analizine veya manuel değerlendirmeye başvurulması önerilir.")
     _card(c5, "📰 Haber Duygu", sent_agg["overall"],
           sub=f"✅{sent_agg['positive']}  ❌{sent_agg['negative']}",
           color=C["green"] if sent_agg["overall"]=="Pozitif"
