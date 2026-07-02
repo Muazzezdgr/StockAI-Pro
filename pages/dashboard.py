@@ -269,12 +269,26 @@ def _price_chart(df, symbol):
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(17,24,39,0.7)",
         font=dict(color=C["text"], family="Space Mono, monospace"),
-        margin=dict(l=10, r=10, t=48, b=10),
+        margin=dict(l=10, r=10, t=48, b=60),
         title=dict(text=f"<b>{symbol}</b> — Candlestick + Bollinger Bands",
                    font=dict(size=14, color=C["text"]), x=0.01),
         xaxis_rangeslider_visible=False,
         height=560,
-        legend=dict(orientation="h", y=1.04, x=0,
+        hovermode="x unified",
+        dragmode="zoom",
+        xaxis_rangeselector=dict(
+            buttons=list([
+                dict(count=1, label="1A", step="month"),
+                dict(count=3, label="3A", step="month"),
+                dict(count=6, label="6A", step="month"),
+                dict(step="year", label="1Y"),
+                dict(step="all", label="Tümü")
+            ]),
+            bgcolor=C["s2"],
+            font=dict(color=C["text"], size=11),
+            activecolor=C["accent"],
+        ),
+        legend=dict(orientation="h", y=1.08, x=0,
                     bgcolor="rgba(26,34,53,0.85)",
                     bordercolor=C["border"], borderwidth=1),
         hoverlabel=dict(bgcolor=C["s2"], font_color=C["text"],
@@ -284,12 +298,32 @@ def _price_chart(df, symbol):
     fig.update_yaxes(gridcolor=C["border"], showgrid=True, gridwidth=0.5, zeroline=False)
     fig.update_yaxes(title_text="Fiyat (USD)", row=1, col=1)
     fig.update_yaxes(title_text="Hacim",       row=2, col=1)
-    st.plotly_chart(fig, use_container_width=True)
+    
+    config = {
+        "scrollZoom": True,
+        "displayModeBar": True,
+        "toImageButtonOptions": {
+            "format": "png",
+            "filename": f"{symbol}_chart",
+            "height": 560,
+            "width": 1000,
+            "scale": 1
+        },
+        "modeBarButtonsToRemove": ["lasso2d"],
+    }
+    st.plotly_chart(fig, use_container_width=True, config=config)
 
 
 # ── RSI + MACD ────────────────────────────────────────────────────────────────
 def _indicator_charts(df):
     c1, c2 = st.columns(2)
+    
+    chart_config = {
+        "scrollZoom": True,
+        "displayModeBar": True,
+        "modeBarButtonsToRemove": ["lasso2d"],
+    }
+    
     with c1:
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=df.index, y=df["RSI"], name="RSI",
@@ -298,8 +332,9 @@ def _indicator_charts(df):
         fig.add_hline(y=70, line_dash="dash", line_color=C["red"],   opacity=0.5)
         fig.add_hline(y=30, line_dash="dash", line_color=C["green"], opacity=0.5)
         fig.add_hrect(y0=30, y1=70, fillcolor="rgba(0,212,255,0.03)")
-        fig.update_layout(**pl("<b>RSI</b> (14)", height=270))
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(**pl("<b>RSI</b> (14)", height=270), 
+                          hovermode="x unified", dragmode="zoom")
+        st.plotly_chart(fig, use_container_width=True, config=chart_config)
 
     with c2:
         fig = go.Figure()
@@ -310,8 +345,9 @@ def _indicator_charts(df):
             line=dict(color=C["accent"], width=1.8), name="MACD"))
         fig.add_trace(go.Scatter(x=df.index, y=df["MACD_Signal"],
             line=dict(color=C["yellow"], width=1.5), name="Sinyal"))
-        fig.update_layout(**pl("<b>MACD</b>", height=270))
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(**pl("<b>MACD</b>", height=270),
+                          hovermode="x unified", dragmode="zoom")
+        st.plotly_chart(fig, use_container_width=True, config=chart_config)
 
 
 # ── Model Analizi ─────────────────────────────────────────────────────────────
@@ -371,6 +407,8 @@ def _model_analysis(df):
             title=dict(text="<b>Feature Importance</b> — Top 14",
                        font=dict(size=14, color=C["text"]), x=0.01),
             height=430,
+            hovermode="x unified",
+            dragmode="zoom",
             xaxis=dict(gridcolor=C["border"], showgrid=True,
                        gridwidth=0.5, zeroline=False),
             yaxis=dict(autorange="reversed",
@@ -378,7 +416,12 @@ def _model_analysis(df):
             hoverlabel=dict(bgcolor=C["s2"], font_color=C["text"],
                             font_family="Space Mono"),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        chart_config = {
+            "scrollZoom": True,
+            "displayModeBar": True,
+            "modeBarButtonsToRemove": ["lasso2d"],
+        }
+        st.plotly_chart(fig, use_container_width=True, config=chart_config)
 
     # ── ROC Eğrisi ────────────────────────────────────────────────────────────
     with cr:
@@ -393,8 +436,9 @@ def _model_analysis(df):
             x=[0,1], y=[0,1], mode="lines",
             line=dict(color=C["muted"], dash="dash", width=1),
             name="Rastgele (0.5)"))
-        fig.update_layout(**pl("<b>ROC Eğrisi</b>", height=430))
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(**pl("<b>ROC Eğrisi</b>", height=430),
+                          hovermode="x unified", dragmode="zoom")
+        st.plotly_chart(fig, use_container_width=True, config=chart_config)
 
     # ── Confusion Matrix ──────────────────────────────────────────────────────
     cm     = metrics["confusion_matrix"]
@@ -416,12 +460,14 @@ def _model_analysis(df):
         title=dict(text="<b>Confusion Matrix</b>",
                    font=dict(size=14, color=C["text"]), x=0.01),
         height=310,
+        hovermode="x unified",
+        dragmode="zoom",
         xaxis=dict(title="Tahmin", gridcolor=C["border"]),
         yaxis=dict(title="Gerçek", gridcolor=C["border"]),
         hoverlabel=dict(bgcolor=C["s2"], font_color=C["text"],
                         font_family="Space Mono"),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, config=chart_config)
 
     # ── Sınıflandırma Raporu tablosu ──────────────────────────────────────────
     st.markdown(f"""
