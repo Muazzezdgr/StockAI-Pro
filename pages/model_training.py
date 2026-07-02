@@ -85,9 +85,15 @@ def show_model_training(symbol, period, window_size, interval="1d"):
         return
 
     # ── Veri çek ─────────────────────────────────────────────────────────────
-    with st.spinner(f"📡  {symbol} verisi çekiliyor..."):
-        df = fetch_stock_data(symbol, period, interval=interval)
-    if df.empty:
+    try:
+        with st.spinner(f"Veri çekiliyor..."):
+            df = fetch_stock_data(symbol, period, interval=interval)
+        if df is None or df.empty:
+            st.error(f"Bu sembol icin veri bulunamadi. Lutfen sembolu kontrol edin: {symbol}")
+            return
+    except Exception:
+        st.error(f"Veri saglaycisina ulasilamadi. Lutfen birkac dakika sonra tekrar deneyin.")
+        return
         st.error("❌  Veri alınamadı."); return
 
     if "LSTM" in model_choice:

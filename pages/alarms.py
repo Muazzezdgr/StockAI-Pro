@@ -30,9 +30,9 @@ def get_current_price(symbol: str) -> dict:
             current_price = float(data["Close"].iloc[-1])
             return {"price": current_price, "success": True, "error": None}
         else:
-            return {"price": None, "success": False, "error": "Veri bulunamadi"}
+            return {"price": None, "success": False, "error": f"Bu sembol ({symbol}) icin veri bulunamadi"}
     except Exception as e:
-        return {"price": None, "success": False, "error": str(e)}
+        return {"price": None, "success": False, "error": f"Veri saglaycisina ulasilamadi: {str(e)}"}
 
 
 def check_alarms():

@@ -52,13 +52,17 @@ def show_backtest(symbol, period, interval="1d"):
         st.info("ℹ️  Parametreleri ayarlayıp BACKTEST ÇALIŞTIR butonuna tıklayın.")
         return
 
-    with st.spinner("📊  Veri ve model hazırlanıyor..."):
-        df = fetch_stock_data(symbol, period, interval=interval)
-        if df.empty:
-            st.error("❌  Veri alınamadı."); return
-        X_train,X_test,y_train,y_test,scaler,_ = prepare_rf_data(df)
-        model = train_random_forest(X_train, y_train)
-        probs = model.predict_proba(X_test)[:,1]
+    try:
+        with st.spinner("Veri ve model hazırlanıyor..."):
+            df = fetch_stock_data(symbol, period, interval=interval)
+            if df is None or df.empty:
+                st.error(f"Bu sembol icin veri bulunamadi. Lutfen sembolu kontrol edin: {symbol}"); return
+            X_train,X_test,y_train,y_test,scaler,_ = prepare_rf_data(df)
+            model = train_random_forest(X_train, y_train)
+            probs = model.predict_proba(X_test)[:,1]
+    except Exception as e:
+        st.error(f"Veri saglaycisina ulasilamadi. Lutfen birkac dakika sonra tekrar deneyin.")
+        return
 
     split  = int(len(df) * 0.8)
     n      = min(len(probs), len(df) - split)

@@ -103,9 +103,14 @@ def show_news_analysis(symbol):
       {symbol} — Son Haberler
     </div>""", unsafe_allow_html=True)
 
-    with st.spinner(f"📰  {symbol} haberleri analiz ediliyor..."):
-        news = fetch_news(symbol)
-        agg  = aggregate_sentiment(news)
+    try:
+        with st.spinner(f"Haberler analiz ediliyor..."):
+            news = fetch_news(symbol)
+            agg  = aggregate_sentiment(news)
+    except Exception:
+        st.error(f"Haberler alınamadı. Lütfen bir kaç dakika sonra tekrar deneyin.")
+        news = []
+        agg = {"positive": 0, "negative": 0, "neutral": 0, "avg_score": 0.0}
 
     # Özet metrikler
     c1,c2,c3,c4 = st.columns(4)

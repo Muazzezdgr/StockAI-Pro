@@ -107,7 +107,8 @@ def show_portfolio():
                 current_price = None
                 if not df.empty:
                     current_price = float(df["Close"].iloc[-1])
-            except Exception:
+            except Exception as e:
+                st.warning(f"⚠️  {symbol} için güncel fiyat alınamadı. Veriler yenilenerek tekrar deneyebilirsiniz.")
                 current_price = None
 
             cost = qty * buy_price

@@ -82,7 +82,7 @@ def fetch_news(symbol: str, api_key: str = None, days_back: int = 7) -> list:
             })
         return news if news else get_demo_news(symbol)
     except Exception as e:
-        print(f"Haber çekme hatası: {e}")
+        print(f"Haber cekme hatasi: Veri saglaycisina ulasilamadi - {str(e)}")
         return get_demo_news(symbol)
 
 

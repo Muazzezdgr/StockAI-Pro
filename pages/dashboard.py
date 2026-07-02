@@ -7,6 +7,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
+from datetime import datetime
 
 from utils.data_utils import (fetch_stock_data, get_ticker_info,
     format_market_cap, compute_signal, prepare_rf_data)
@@ -68,14 +69,31 @@ def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
     if not run_analysis:
         _welcome(); return
 
-    with st.spinner(f"📡  {symbol} verisi çekiliyor..."):
-        df = fetch_stock_data(symbol, period, interval=interval)
-    if df.empty:
-        st.error(f"❌  {symbol} için veri alınamadı."); return
+    # Veri çekme - hata yönetimi ile
+    try:
+        with st.spinner(f"Veri çekiliyor..."):
+            df = fetch_stock_data(symbol, period, interval=interval)
+        if df is None or df.empty:
+            st.error(f"Bu sembol icin veri bulunamadi. Lutfen sembolu kontrol edin: {symbol}")
+            return
+        last_update = datetime.now()
+    except Exception as e:
+        st.error(f"Veri saglaycisina ulasilamadi. Lutfen birkac dakika sonra tekrar deneyin.")
+        return
 
-    info     = get_ticker_info(symbol)
-    news     = fetch_news(symbol)
-    sent_agg = aggregate_sentiment(news)
+    # Ticker bilgisi - hata tolere et
+    try:
+        info = get_ticker_info(symbol)
+    except Exception:
+        info = {"name": symbol, "sector": "—"}
+
+    # Haber analizi - hata tolere et
+    try:
+        news = fetch_news(symbol)
+        sent_agg = aggregate_sentiment(news)
+    except Exception:
+        news = []
+        sent_agg = {"positive": 0, "negative": 0, "neutral": 0, "overall": "Nötr", "avg_score": 0.0}
 
     last   = float(df["Close"].iloc[-1])
     prev   = float(df["Close"].iloc[-2])
@@ -188,6 +206,13 @@ def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
         _news_section(news, sent_agg)
     with tab4:
         _corr_chart(df)
+
+    # Veri kaynagi bilgisi
+    st.markdown(f"""
+    <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid {C['border']};
+                color:{C['muted']};font-size:0.75rem;font-family:'Space Mono',monospace;">
+      Veri kaynagi: Yahoo Finance | Son guncelleme: {last_update.strftime('%Y-%m-%d %H:%M:%S')}
+    </div>""", unsafe_allow_html=True)
 
 
 # ── Kart helper ───────────────────────────────────────────────────────────────
