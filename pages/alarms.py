@@ -84,7 +84,8 @@ def show_alarms():
 
     with col1:
         if st.button("Kontrol Et", key="check_alarms", use_container_width=True):
-            triggered_indices = check_alarms()
+            with st.spinner("Alarmlar kontrol ediliyor..."):
+                triggered_indices = check_alarms()
             if triggered_indices:
                 st.session_state["_last_triggered"] = triggered_indices
 

@@ -11,6 +11,14 @@ st.set_page_config(
 # ── Custom CSS ──────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
+@media (max-width: 900px) {
+    .stButton > button { padding: 0.45rem 0.9rem !important; font-size: 0.85rem !important; }
+    .metric-card, .news-card { padding: 0.7rem 0.9rem !important; }
+    .logo-text { font-size: 1.05rem !important; }
+    .section-title { font-size: 0.65rem !important; }
+    /* help columns avoid overflow on narrow screens */
+    div[role="list"] > div[role="listitem"] { min-width: 0 !important; }
+}
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
 
 :root {
@@ -195,11 +203,34 @@ div[data-testid="stExpander"] {
 with st.sidebar:
     st.markdown('<div class="logo-text">STOCK AI PRO</div>', unsafe_allow_html=True)
     st.markdown('<p style="color:#64748b;font-size:0.75rem;margin-top:4px;font-family:Space Mono,monospace;">v2.0 — LSTM + RF + NLP</p>', unsafe_allow_html=True)
+    # Sidebar summary: portfolio total and active alarms (quick glance)
+    try:
+        total_portfolio = 0.0
+        if "portfolio" in st.session_state and st.session_state["portfolio"]:
+            for item in st.session_state.get("portfolio", []):
+                qty = float(item.get("quantity", 0) or 0)
+                # prefer item-level cached current price if available
+                cur = item.get("current_price") if item.get("current_price") is not None else None
+                if cur is None:
+                    # fallback to cost (buy_price) to avoid slow network calls in sidebar
+                    cur = item.get("buy_price", 0)
+                total_portfolio += qty * float(cur)
+        active_alarms = len([a for a in st.session_state.get("alarms", []) if a.get("status") != "tetiklendi"]) if "alarms" in st.session_state else 0
+        st.markdown(f"""
+        <div class="metric-card" style="padding:0.6rem 1rem;margin-bottom:0.75rem;">
+          <div style="color:var(--muted);font-size:0.72rem;">Portföy</div>
+          <div style="font-weight:800;font-family:var(--font-mono);font-size:1rem;color:var(--text);">
+            {total_portfolio:,.0f} TL &nbsp;|&nbsp; {active_alarms} Aktif Alarm
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+    except Exception:
+        pass
     st.markdown("---")
 
     page = st.radio(
         "NAVİGASYON",
-        ["📊  Dashboard", "🤖  Model Eğitimi", "📰  Haber Analizi", "📈  Backtest", "💼  Portföyüm", "⏰  Alarmlar", "ℹ️  Hakkında"],
+        ["📊  Dashboard", "🤖  Model Eğitimi", "📰  Haber Analizi", "📈  Backtest", "💼  Portföyüm", "⏰  Alarmlar"],
         label_visibility="visible"
     )
 
@@ -246,6 +277,4 @@ elif "💼" in page:
 elif "⏰" in page:
     from pages.alarms import show_alarms
     show_alarms()
-elif "ℹ️" in page:
-    from pages.about import show_about
-    show_about()
+

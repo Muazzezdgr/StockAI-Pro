@@ -95,39 +95,41 @@ def show_portfolio():
     total_cost = 0.0
     total_pnl = 0.0
 
-    for item in portfolio:
-        symbol = item["symbol"]
-        qty = float(item["quantity"])
-        buy_price = float(item["buy_price"])
+    # Wrap price fetching in a spinner so user sees loading state
+    with st.spinner("Veriler güncelleniyor..."):
+        for item in portfolio:
+            symbol = item["symbol"]
+            qty = float(item["quantity"])
+            buy_price = float(item["buy_price"])
 
-        try:
-            df = fetch_stock_data(symbol, period="2y", interval="1d")
-            current_price = None
-            if not df.empty:
-                current_price = float(df["Close"].iloc[-1])
-        except Exception:
-            current_price = None
+            try:
+                df = fetch_stock_data(symbol, period="2y", interval="1d")
+                current_price = None
+                if not df.empty:
+                    current_price = float(df["Close"].iloc[-1])
+            except Exception:
+                current_price = None
 
-        cost = qty * buy_price
-        value = qty * current_price if current_price is not None else None
-        pnl = value - cost if value is not None else None
-        pnl_pct = (pnl / cost * 100) if pnl is not None and cost else None
+            cost = qty * buy_price
+            value = qty * current_price if current_price is not None else None
+            pnl = value - cost if value is not None else None
+            pnl_pct = (pnl / cost * 100) if pnl is not None and cost else None
 
-        total_cost += cost
-        if value is not None:
-            total_value += value
-            total_pnl += pnl
+            total_cost += cost
+            if value is not None:
+                total_value += value
+                total_pnl += pnl
 
-        rows.append({
-            "symbol": symbol,
-            "quantity": qty,
-            "buy_price": buy_price,
-            "current_price": current_price,
-            "cost": cost,
-            "value": value,
-            "pnl": pnl,
-            "pnl_pct": pnl_pct,
-        })
+            rows.append({
+                "symbol": symbol,
+                "quantity": qty,
+                "buy_price": buy_price,
+                "current_price": current_price,
+                "cost": cost,
+                "value": value,
+                "pnl": pnl,
+                "pnl_pct": pnl_pct,
+            })
 
     c1, c2, c3 = st.columns(3)
     _card(c1, "💰 Toplam Portföy Değeri", _format_currency(total_value), color=C["accent"])
