@@ -149,6 +149,10 @@ html, body, [data-testid="stAppViewContainer"] {
     margin-top: 0.5rem;
 }
 
+[data-testid="stPageListContainer"] {
+    display: none !important;
+}
+
 div[data-testid="stExpander"] {
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -195,7 +199,7 @@ with st.sidebar:
 
     page = st.radio(
         "NAVİGASYON",
-        ["📊  Dashboard", "🤖  Model Eğitimi", "📰  Haber Analizi", "📈  Backtest", "�  Portföyüm", "�📋  Hakkında"],
+        ["📊  Dashboard", "🤖  Model Eğitimi", "📰  Haber Analizi", "📈  Backtest", "💼  Portföyüm", "⏰  Alarmlar", "ℹ️  Hakkında"],
         label_visibility="visible"
     )
 
@@ -236,9 +240,12 @@ elif "📰" in page:
 elif "📈" in page:
     from pages.backtest import show_backtest
     show_backtest(selected_symbol, effective_period, interval=interval)
-elif "�" in page:
+elif "💼" in page:
     from pages.portfolio import show_portfolio
     show_portfolio()
-elif "�📋" in page:
+elif "⏰" in page:
+    from pages.alarms import show_alarms
+    show_alarms()
+elif "ℹ️" in page:
     from pages.about import show_about
     show_about()
