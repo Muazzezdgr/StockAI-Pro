@@ -111,6 +111,35 @@ def show_backtest(symbol, period, interval="1d"):
     ret_bh   = (final_bh - initial) / initial * 100
     win_rate = (wins / trades * 100) if trades > 0 else 0
 
+    # Period length (days) used for annualization and Sharpe calculation
+    period_days = len(portfolio)
+
+    # Annualized return (assume daily data -> 252 trading days per year)
+    if period_days > 0 and initial > 0:
+        try:
+            ann_return = (final_m / initial) ** (252.0 / max(period_days, 1)) - 1.0
+        except Exception:
+            ann_return = None
+    else:
+        ann_return = None
+
+    # Sharpe Ratio (assume risk-free rate = 0). Use daily returns and annualize.
+    sharpe = None
+    if len(portfolio) > 1:
+        arr = np.array(portfolio, dtype=float)
+        daily_rets = np.diff(arr) / arr[:-1]
+        if daily_rets.size > 1:
+            mean_d = daily_rets.mean()
+            std_d = daily_rets.std(ddof=1)
+            if std_d > 0:
+                sharpe = (mean_d / std_d) * np.sqrt(252.0)
+            else:
+                sharpe = None
+        else:
+            sharpe = None
+    else:
+        sharpe = None
+
     # Max drawdown
     peak = np.maximum.accumulate(portfolio)
     dd   = (np.array(portfolio) - peak) / peak * 100
@@ -129,6 +158,25 @@ def show_backtest(symbol, period, interval="1d"):
           color=C["green"] if win_rate>50 else C["yellow"])
     _card(mc5,"📉 Max Drawdown",f"{max_dd:.1f}%",
           color=C["red"] if max_dd < -10 else C["yellow"])
+
+    # Ek metrikler: Sharpe ve Yıllıklandırılmış Getiri
+    sc1, sc2 = st.columns(2)
+    sharpe_text = f"{sharpe:.2f}" if sharpe is not None else "—"
+    ann_text = f"{ann_return*100:+.2f}%" if ann_return is not None else "—"
+    _card(sc1, "Sharpe Ratio", sharpe_text,
+          sub="Risk-free rate = 0 varsayildi", color=C["accent"])
+    _card(sc2, "Yıllıklandırılmış Getiri", ann_text,
+          sub="Dönem bazlı sonuç yıllıklandırıldı", color=C["purple"]) 
+
+    # Uyarılar ve açıklamalar
+    if trades < 5:
+        st.warning("Az sayıda işlem nedeniyle bu sonuclar istatistiksel olarak anlamli degildir, yorumlarken dikkatli olun.")
+
+    st.markdown("<div style='color:%s;font-size:0.85rem;'>" % C["muted"] +
+                "Kazanma oranı (trade başına başarı) ile toplam getiri farklı metriklerdir; " +
+                "kazanma oranı düşük olsa dahi büyük kazançlı işlemler toplam getiriyi pozitif yapabilir, " +
+                "veya tersi de geçerlidir. Bu iki metriği birlikte değerlendiriniz." +
+                "</div>", unsafe_allow_html=True)
 
     st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 
