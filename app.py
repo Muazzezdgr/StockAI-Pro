@@ -207,7 +207,7 @@ with st.sidebar:
     if "ABD" in market:
         symbols = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "NFLX"]
     elif "BIST" in market:
-        symbols = ["THYAO.IS", "GARAN.IS", "ASELS.IS", "KCHOL.IS", "EREGL.IS", "BIMAS.IS", "SISE.IS", "TUPRS.IS"]
+        symbols = ["THYAO.IS", "GARAN.IS", "AKBNK.IS", "ASELS.IS", "KCHOL.IS", "EREGL.IS", "BIMAS.IS", "SAHOL.IS", "SISE.IS", "TUPRS.IS", "PGSUS.IS", "FROTO.IS", "TOASO.IS", "ARCLK.IS", "TCELL.IS", "YKBNK.IS", "ISCTR.IS", "VAKBN.IS", "HALKB.IS", "KOZAL.IS", "PETKM.IS", "TTKOM.IS", "MGROS.IS", "ULKER.IS", "TAVHL.IS", "ENKAI.IS", "EKGYO.IS", "SASA.IS", "DOHOL.IS", "KOZAA.IS"]
     else:
         symbols = ["BTC-USD", "ETH-USD", "BNB-USD", "ADA-USD", "SOL-USD", "XRP-USD", "DOGE-USD", "LTC-USD"]
 
