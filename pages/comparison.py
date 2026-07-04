@@ -6,20 +6,8 @@ import plotly.graph_objects as go
 
 from utils.data_utils import fetch_stock_data, get_ticker_info, prepare_rf_data
 from utils.model_utils import train_random_forest
-
-C = {
-    "bg":     "#0a0e1a",
-    "s1":     "#111827",
-    "s2":     "#1a2235",
-    "border": "#1e2d45",
-    "accent": "#00d4ff",
-    "purple": "#7c3aed",
-    "green":  "#10b981",
-    "red":    "#ef4444",
-    "yellow": "#f59e0b",
-    "text":   "#e2e8f0",
-    "muted":  "#64748b",
-}
+from utils.chart_theme import (COLORS as C, LINE_REG, base_layout as pl,
+    modebar_config)
 
 US_SYMBOLS = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "NFLX"]
 BIST_SYMBOLS = ["THYAO.IS", "GARAN.IS", "AKBNK.IS", "ASELS.IS", "KCHOL.IS", "EREGL.IS", "BIMAS.IS",
@@ -34,28 +22,6 @@ MARKETS = {
     "BIST (Turkiye)": BIST_SYMBOLS,
     "Kripto Para": CRYPTO_SYMBOLS,
 }
-
-
-def pl(title="", height=350, **extra):
-    base = dict(
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor  = "rgba(17,24,39,0.7)",
-        font          = dict(color=C["text"], family="Space Mono, monospace"),
-        margin        = dict(l=10, r=10, t=48, b=10),
-        title         = dict(text=title, font=dict(size=14, color=C["text"]), x=0.01),
-        xaxis = dict(gridcolor=C["border"], showgrid=True, gridwidth=0.5, zeroline=False),
-        yaxis = dict(gridcolor=C["border"], showgrid=True, gridwidth=0.5, zeroline=False),
-        legend = dict(bgcolor="rgba(26,34,53,0.85)", bordercolor=C["border"],
-                      borderwidth=1, font=dict(size=11)),
-        hoverlabel = dict(bgcolor=C["s2"], font_color=C["text"], font_family="Space Mono"),
-        height = height,
-    )
-    for k, v in extra.items():
-        if isinstance(v, dict) and isinstance(base.get(k), dict):
-            base[k] = {**base[k], **v}
-        else:
-            base[k] = v
-    return base
 
 
 def _card(col, label, value, sub="", color=None):
@@ -257,19 +223,17 @@ def show_comparison(period, interval):
     # -- Normalize yuzde degisim grafigi ---------------------------------------
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=a["df"].index, y=a["norm"], name=a["symbol"],
-        line=dict(color=C["accent"], width=2.2)))
+        line=dict(color=C["accent"], width=LINE_REG),
+        hovertemplate=f"{a['symbol']}: %{{y:+.2f}}%<extra></extra>"))
     fig.add_trace(go.Scatter(x=b["df"].index, y=b["norm"], name=b["symbol"],
-        line=dict(color=C["purple"], width=2.2)))
-    fig.add_hline(y=0, line_dash="dash", line_color=C["muted"], opacity=0.5)
-    fig.update_layout(**pl(f"<b>{a['symbol']} vs {b['symbol']}</b> - Yuzde Degisim (Normalize)", height=430,
-                           yaxis=dict(title="Yuzde Degisim (%)", gridcolor=C["border"])),
+        line=dict(color=C["purple"], width=LINE_REG),
+        hovertemplate=f"{b['symbol']}: %{{y:+.2f}}%<extra></extra>"))
+    fig.add_hline(y=0, line_dash="dash", line_width=1, line_color=C["muted"], opacity=0.5)
+    fig.update_layout(**pl(f"<b>{a['symbol']} vs {b['symbol']}</b> - Yuzde Degisim (Normalize)",
+                           height=430, y_title="Yuzde Degisim (%)"),
                       hovermode="x unified", dragmode="zoom")
-    chart_config = {
-        "scrollZoom": True,
-        "displayModeBar": True,
-        "modeBarButtonsToRemove": ["lasso2d"],
-    }
-    st.plotly_chart(fig, use_container_width=True, config=chart_config)
+    st.plotly_chart(fig, use_container_width=True,
+                     config=modebar_config(f"{a['symbol']}_vs_{b['symbol']}"))
 
     # -- Metrik karsilastirma tablosu ------------------------------------------
     rows = "".join([

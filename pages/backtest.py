@@ -8,10 +8,9 @@ import numpy as np
 
 from utils.data_utils import fetch_stock_data, prepare_rf_data
 from utils.model_utils import train_random_forest
-
-C = {"bg":"#0a0e1a","s1":"#111827","s2":"#1a2235","border":"#1e2d45",
-     "accent":"#00d4ff","purple":"#7c3aed","green":"#10b981",
-     "red":"#ef4444","yellow":"#f59e0b","text":"#e2e8f0","muted":"#64748b"}
+from utils.chart_theme import (COLORS as C, FONT_FAMILY, PLOT_BG,
+    LINE_THIN, LINE_MAIN, TITLE_SIZE, base_axis, bottom_legend,
+    hover_style, rgba, area_fillgradient, modebar_config)
 
 def _card(col, label, value, sub="", color=None):
     color = color or C["accent"]
@@ -189,42 +188,35 @@ def show_backtest(symbol, period, interval="1d"):
     fig.add_trace(go.Scatter(
         y=portfolio, mode="lines",
         name=f"Model ({ret_m:+.1f}%)",
-        line=dict(color=C["accent"], width=2.5),
-        fill="tozeroy", fillcolor="rgba(0,212,255,0.06)",
+        line=dict(color=C["accent"], width=LINE_MAIN),
+        fill="tozeroy", fillgradient=area_fillgradient(C["accent"], 0.20, 0.0),
         hovertemplate="Gün %{x}<br>Portföy: $%{y:,.0f}<extra></extra>",
     ))
     fig.add_trace(go.Scatter(
         y=buy_hold, mode="lines",
         name=f"Buy&Hold ({ret_bh:+.1f}%)",
-        line=dict(color=C["purple"], width=2, dash="dash"),
+        line=dict(color=C["purple"], width=LINE_THIN, dash="dash"),
         hovertemplate="Gün %{x}<br>B&H: $%{y:,.0f}<extra></extra>",
     ))
-    fig.add_hline(y=initial, line_dash="dot",
+    fig.add_hline(y=initial, line_dash="dot", line_width=1,
                   line_color=C["muted"], opacity=0.5,
-                  annotation_text="Başlangıç")
-    # Model > B&H bölgelerini renklendir
-    fig.add_trace(go.Scatter(
-        y=[max(m,b) for m,b in zip(portfolio,buy_hold)],
-        fill=None, mode="lines",
-        line=dict(color="rgba(0,0,0,0)"),
-        showlegend=False, hoverinfo="skip",
-    ))
+                  annotation_text="Başlangıç",
+                  annotation_font=dict(size=10, color=C["muted"], family=FONT_FAMILY))
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(17,24,39,0.7)",
-        font=dict(color=C["text"], family="Space Mono, monospace"),
-        margin=dict(l=10, r=10, t=48, b=10),
+        plot_bgcolor=PLOT_BG,
+        font=dict(color=C["text"], family=FONT_FAMILY, size=10.5),
+        margin=dict(l=58, r=24, t=52, b=56),
         title=dict(text=f"<b>{symbol}</b> — Model vs Buy&Hold",
-                   font=dict(size=14, color=C["text"]), x=0.01),
+                   font=dict(size=TITLE_SIZE, color=C["text"]), x=0.01, xanchor="left"),
         height=400,
-        xaxis=dict(gridcolor=C["border"], title="Gün"),
-        yaxis=dict(gridcolor=C["border"], title="Portföy Değeri ($)"),
-        legend=dict(bgcolor="rgba(26,34,53,0.85)",
-                    bordercolor=C["border"], borderwidth=1),
-        hoverlabel=dict(bgcolor=C["s2"], font_color=C["text"],
-                        font_family="Space Mono"),
+        xaxis=base_axis("Gün"),
+        yaxis=base_axis("Portföy Değeri ($)"),
+        legend=bottom_legend(),
+        hovermode="x unified",
+        hoverlabel=hover_style(),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, config=modebar_config(f"{symbol}_backtest"))
 
     # ── İşlem geçmişi ─────────────────────────────────────────────────────────
     if trade_log:

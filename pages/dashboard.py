@@ -14,54 +14,10 @@ from utils.data_utils import (fetch_stock_data, get_ticker_info,
 from utils.sentiment_utils import fetch_news, aggregate_sentiment
 from utils.model_utils import train_random_forest, evaluate_model, get_feature_importance
 from utils.pdf_report import generate_pdf_report
-
-# ────────────────────────────────────────────────────────────────────────────
-C = {
-    "bg":     "#0a0e1a",
-    "s1":     "#111827",
-    "s2":     "#1a2235",
-    "border": "#1e2d45",
-    "accent": "#00d4ff",
-    "purple": "#7c3aed",
-    "green":  "#10b981",
-    "red":    "#ef4444",
-    "yellow": "#f59e0b",
-    "text":   "#e2e8f0",
-    "muted":  "#64748b",
-}
-
-def pl(title="", height=350, **extra):
-    """
-    Güvenli plot layout üretici.
-    extra içinde yaxis varsa base'i ezer → çakışma olmaz.
-    """
-    base = dict(
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor  = "rgba(17,24,39,0.7)",
-        font          = dict(color=C["text"], family="Space Mono, monospace"),
-        margin        = dict(l=10, r=10, t=48, b=10),
-        title         = dict(text=title,
-                             font=dict(size=14, color=C["text"]),
-                             x=0.01),
-        xaxis = dict(gridcolor=C["border"], showgrid=True,
-                     gridwidth=0.5, zeroline=False),
-        yaxis = dict(gridcolor=C["border"], showgrid=True,
-                     gridwidth=0.5, zeroline=False),
-        legend = dict(bgcolor="rgba(26,34,53,0.85)",
-                      bordercolor=C["border"], borderwidth=1,
-                      font=dict(size=11)),
-        hoverlabel = dict(bgcolor=C["s2"], font_color=C["text"],
-                          font_family="Space Mono"),
-        height = height,
-    )
-    # extra anahtarlarını tek tek merge et
-    # eğer extra'da yaxis/xaxis varsa, base'deki tamamen değiştirilir
-    for k, v in extra.items():
-        if isinstance(v, dict) and isinstance(base.get(k), dict):
-            base[k] = {**base[k], **v}   # dict ise birleştir
-        else:
-            base[k] = v                   # değilse üzerine yaz
-    return base
+from utils.chart_theme import (COLORS as C, FONT_FAMILY, PLOT_BG,
+    LINE_HAIR, LINE_THIN, LINE_REG, LINE_MAIN,
+    TITLE_SIZE, AXIS_TITLE, TICK_SIZE, base_layout as pl, base_axis,
+    bottom_legend, hover_style, rgba, area_fillgradient, modebar_config)
 
 # ════════════════════════════════════════════════════════════════════════════
 def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
@@ -341,43 +297,47 @@ def _card(col, label, value, sub="", color=None):
 # ── Fiyat Grafiği ─────────────────────────────────────────────────────────────
 def _price_chart(df, symbol):
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True,
-                        row_heights=[0.72, 0.28], vertical_spacing=0.03)
+                        row_heights=[0.74, 0.26], vertical_spacing=0.04)
 
     fig.add_trace(go.Candlestick(
         x=df.index, open=df["Open"], high=df["High"],
         low=df["Low"], close=df["Close"], name="OHLC",
-        increasing=dict(line_color=C["green"], fillcolor=C["green"]),
-        decreasing=dict(line_color=C["red"],   fillcolor=C["red"]),
+        increasing=dict(line_color=C["green"], fillcolor=rgba(C["green"], 0.82),
+                         line=dict(width=1)),
+        decreasing=dict(line_color=C["red"],   fillcolor=rgba(C["red"], 0.82),
+                         line=dict(width=1)),
     ), row=1, col=1)
 
-    for ma, col, w in [("MA20",C["accent"],1.6),
-                        ("MA50",C["yellow"],1.6),
-                        ("MA10",C["purple"],1.0)]:
+    for ma, col, w in [("MA20", C["accent"], LINE_MAIN),
+                        ("MA50", C["yellow"], LINE_THIN),
+                        ("MA10", C["purple"], LINE_HAIR)]:
         fig.add_trace(go.Scatter(x=df.index, y=df[ma], name=ma,
-            line=dict(color=col, width=w)), row=1, col=1)
+            line=dict(color=col, width=w),
+            hovertemplate=f"{ma}: %{{y:.2f}}<extra></extra>"), row=1, col=1)
 
-    # Bollinger Bands
+    # Bollinger Bands — hover kutusunu kalabalıklaştırmasın diye hover kapalı
     fig.add_trace(go.Scatter(x=df.index, y=df["BB_Upper"],
-        line=dict(color="rgba(255,255,255,0.10)", width=1, dash="dot"),
-        showlegend=False, name="BB Üst"), row=1, col=1)
+        line=dict(color=rgba(C["text"], 0.10), width=1, dash="dot"),
+        showlegend=False, name="BB Üst", hoverinfo="skip"), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df["BB_Lower"],
-        fill="tonexty", fillcolor="rgba(0,212,255,0.04)",
-        line=dict(color="rgba(255,255,255,0.10)", width=1, dash="dot"),
-        showlegend=False, name="BB Alt"), row=1, col=1)
+        fill="tonexty", fillcolor=rgba(C["accent"], 0.045),
+        line=dict(color=rgba(C["text"], 0.10), width=1, dash="dot"),
+        showlegend=False, name="BB Alt", hoverinfo="skip"), row=1, col=1)
 
-    # Hacim
-    vcols = [C["green"] if df["Close"].iloc[i] >= df["Open"].iloc[i]
-             else C["red"] for i in range(len(df))]
+    # Hacim — hafif gradyanlı derinlik
+    vcols = [rgba(C["green"], 0.7) if df["Close"].iloc[i] >= df["Open"].iloc[i]
+             else rgba(C["red"], 0.7) for i in range(len(df))]
     fig.add_trace(go.Bar(x=df.index, y=df["Volume"],
-        marker_color=vcols, opacity=0.6, name="Hacim"), row=2, col=1)
+        marker=dict(color=vcols, line_width=0), name="Hacim",
+        hovertemplate="Hacim: %{y:,.0f}<extra></extra>"), row=2, col=1)
 
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(17,24,39,0.7)",
-        font=dict(color=C["text"], family="Space Mono, monospace"),
-        margin=dict(l=10, r=10, t=48, b=60),
+        plot_bgcolor=PLOT_BG,
+        font=dict(color=C["text"], family=FONT_FAMILY, size=10.5),
+        margin=dict(l=55, r=24, t=56, b=62),
         title=dict(text=f"<b>{symbol}</b> — Candlestick + Bollinger Bands",
-                   font=dict(size=14, color=C["text"]), x=0.01),
+                   font=dict(size=TITLE_SIZE, color=C["text"]), x=0.01, xanchor="left"),
         xaxis_rangeslider_visible=False,
         height=560,
         hovermode="x unified",
@@ -391,67 +351,56 @@ def _price_chart(df, symbol):
                 dict(step="all", label="Tümü")
             ]),
             bgcolor=C["s2"],
-            font=dict(color=C["text"], size=11),
+            font=dict(color=C["muted"], size=10.5, family=FONT_FAMILY),
             activecolor=C["accent"],
+            y=1.10,
         ),
-        legend=dict(orientation="h", y=1.08, x=0,
-                    bgcolor="rgba(26,34,53,0.85)",
-                    bordercolor=C["border"], borderwidth=1),
-        hoverlabel=dict(bgcolor=C["s2"], font_color=C["text"],
-                        font_family="Space Mono"),
+        legend=bottom_legend(y=-0.16),
+        hoverlabel=hover_style(),
     )
-    fig.update_xaxes(gridcolor=C["border"], showgrid=True, gridwidth=0.5)
-    fig.update_yaxes(gridcolor=C["border"], showgrid=True, gridwidth=0.5, zeroline=False)
+    fig.update_xaxes(**base_axis())
+    fig.update_yaxes(**base_axis())
     fig.update_yaxes(title_text="Fiyat (USD)", row=1, col=1)
     fig.update_yaxes(title_text="Hacim",       row=2, col=1)
-    
-    config = {
-        "scrollZoom": True,
-        "displayModeBar": True,
-        "toImageButtonOptions": {
-            "format": "png",
-            "filename": f"{symbol}_chart",
-            "height": 560,
-            "width": 1000,
-            "scale": 1
-        },
-        "modeBarButtonsToRemove": ["lasso2d"],
-    }
-    st.plotly_chart(fig, use_container_width=True, config=config)
+
+    st.plotly_chart(fig, use_container_width=True,
+                     config=modebar_config(f"{symbol}_chart"))
 
 
 # ── RSI + MACD ────────────────────────────────────────────────────────────────
 def _indicator_charts(df):
     c1, c2 = st.columns(2)
-    
-    chart_config = {
-        "scrollZoom": True,
-        "displayModeBar": True,
-        "modeBarButtonsToRemove": ["lasso2d"],
-    }
-    
+    chart_config = modebar_config("indicators")
+
     with c1:
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=df.index, y=df["RSI"], name="RSI",
-            line=dict(color=C["accent"], width=2),
-            fill="tozeroy", fillcolor="rgba(0,212,255,0.05)"))
-        fig.add_hline(y=70, line_dash="dash", line_color=C["red"],   opacity=0.5)
-        fig.add_hline(y=30, line_dash="dash", line_color=C["green"], opacity=0.5)
-        fig.add_hrect(y0=30, y1=70, fillcolor="rgba(0,212,255,0.03)")
-        fig.update_layout(**pl("<b>RSI</b> (14)", height=270), 
-                          hovermode="x unified", dragmode="zoom")
+            line=dict(color=C["accent"], width=LINE_REG),
+            fill="tozeroy", fillgradient=area_fillgradient(C["accent"], 0.20, 0.0),
+            hovertemplate="RSI: %{y:.1f}<extra></extra>"))
+        fig.add_hline(y=70, line_dash="dash", line_width=1, line_color=C["red"],   opacity=0.45)
+        fig.add_hline(y=30, line_dash="dash", line_width=1, line_color=C["green"], opacity=0.45)
+        fig.add_hrect(y0=30, y1=70, fillcolor=rgba(C["accent"], 0.03), line_width=0)
+        fig.update_layout(**pl("<b>RSI</b> (14)", height=320, show_legend=False,
+                                margin=dict(l=42, r=20, t=52, b=30)),
+                          hovermode="x", dragmode="zoom")
         st.plotly_chart(fig, use_container_width=True, config=chart_config)
 
     with c2:
         fig = go.Figure()
-        hcols = [C["green"] if v >= 0 else C["red"] for v in df["MACD_Hist"]]
+        hcols = [rgba(C["green"], 0.75) if v >= 0 else rgba(C["red"], 0.75) for v in df["MACD_Hist"]]
         fig.add_trace(go.Bar(x=df.index, y=df["MACD_Hist"],
-            marker_color=hcols, opacity=0.8, name="Histogram"))
+            marker=dict(color=hcols, line_width=0), name="Histogram",
+            hovertemplate="Histogram: %{y:.4f}<extra></extra>"))
         fig.add_trace(go.Scatter(x=df.index, y=df["MACD"],
-            line=dict(color=C["accent"], width=1.8), name="MACD"))
+            line=dict(color=C["accent"], width=LINE_REG), name="MACD",
+            hovertemplate="MACD: %{y:.4f}<extra></extra>"))
         fig.add_trace(go.Scatter(x=df.index, y=df["MACD_Signal"],
-            line=dict(color=C["yellow"], width=1.5), name="Sinyal"))
-        fig.update_layout(**pl("<b>MACD</b>", height=270),
+            line=dict(color=C["yellow"], width=LINE_THIN), name="Sinyal",
+            hovertemplate="Sinyal: %{y:.4f}<extra></extra>"))
+        fig.update_layout(**pl("<b>MACD</b>", height=320,
+                                margin=dict(l=42, r=20, t=52, b=78),
+                                legend=bottom_legend(y=-0.55)),
                           hovermode="x unified", dragmode="zoom")
         st.plotly_chart(fig, use_container_width=True, config=chart_config)
 
@@ -496,37 +445,32 @@ def _model_analysis(df):
             x=vals, y=names, orientation="h",
             marker=dict(
                 color=vals,
-                colorscale=[[0,"#7c3aed"],[0.5,"#00d4ff"],[1,"#10b981"]],
+                colorscale=[[0, C["purple"]], [0.5, C["accent"]], [1, C["green"]]],
                 showscale=True,
-                colorbar=dict(title="Önem",
-                              tickfont=dict(color=C["text"]),
-                              title_font=dict(color=C["text"])),
+                line_width=0,
+                colorbar=dict(title=dict(text="Önem", font=dict(color=C["muted"], size=AXIS_TITLE)),
+                              tickfont=dict(color=C["muted"], size=TICK_SIZE), thickness=12, outlinewidth=0),
             ),
             hovertemplate="<b>%{y}</b><br>Önem: %{x:.4f}<extra></extra>",
         ))
         # update_layout — yaxis'i direkt ver, pl() kullanma
         fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(17,24,39,0.7)",
-            font=dict(color=C["text"], family="Space Mono, monospace"),
-            margin=dict(l=10, r=10, t=48, b=10),
+            plot_bgcolor=PLOT_BG,
+            font=dict(color=C["text"], family=FONT_FAMILY, size=TICK_SIZE),
+            margin=dict(l=10, r=16, t=52, b=20),
             title=dict(text="<b>Feature Importance</b> — Top 14",
-                       font=dict(size=14, color=C["text"]), x=0.01),
+                       font=dict(size=TITLE_SIZE, color=C["text"]), x=0.01, xanchor="left"),
             height=430,
-            hovermode="x unified",
+            hovermode="closest",
             dragmode="zoom",
-            xaxis=dict(gridcolor=C["border"], showgrid=True,
-                       gridwidth=0.5, zeroline=False),
-            yaxis=dict(autorange="reversed",
-                       gridcolor=C["border"], showgrid=False),
-            hoverlabel=dict(bgcolor=C["s2"], font_color=C["text"],
-                            font_family="Space Mono"),
+            showlegend=False,
+            xaxis=base_axis(),
+            yaxis=dict(autorange="reversed", showgrid=False, zeroline=False,
+                       tickfont=dict(size=TICK_SIZE, color=C["muted"], family=FONT_FAMILY)),
+            hoverlabel=hover_style(),
         )
-        chart_config = {
-            "scrollZoom": True,
-            "displayModeBar": True,
-            "modeBarButtonsToRemove": ["lasso2d"],
-        }
+        chart_config = modebar_config("feature_importance")
         st.plotly_chart(fig, use_container_width=True, config=chart_config)
 
     # ── ROC Eğrisi ────────────────────────────────────────────────────────────
@@ -535,15 +479,16 @@ def _model_analysis(df):
         fig.add_trace(go.Scatter(
             x=metrics["roc_fpr"], y=metrics["roc_tpr"], mode="lines",
             name=f"RF  AUC = {auc:.3f}",
-            line=dict(color=C["accent"], width=2.5),
-            fill="tozeroy", fillcolor="rgba(0,212,255,0.07)",
+            line=dict(color=C["accent"], width=LINE_MAIN),
+            fill="tozeroy", fillgradient=area_fillgradient(C["accent"], 0.22, 0.0),
+            hovertemplate="FPR: %{x:.2f}<br>TPR: %{y:.2f}<extra></extra>",
         ))
         fig.add_trace(go.Scatter(
             x=[0,1], y=[0,1], mode="lines",
-            line=dict(color=C["muted"], dash="dash", width=1),
-            name="Rastgele (0.5)"))
+            line=dict(color=C["muted"], dash="dash", width=LINE_HAIR),
+            name="Rastgele (0.5)", hoverinfo="skip"))
         fig.update_layout(**pl("<b>ROC Eğrisi</b>", height=430),
-                          hovermode="x unified", dragmode="zoom")
+                          hovermode="closest", dragmode="zoom")
         st.plotly_chart(fig, use_container_width=True, config=chart_config)
 
     # ── Confusion Matrix ──────────────────────────────────────────────────────
@@ -551,27 +496,30 @@ def _model_analysis(df):
     labels = ["AŞAĞI (0)", "YUKARI (1)"]
     fig = go.Figure(go.Heatmap(
         z=cm, x=labels, y=labels,
-        colorscale=[[0,C["s1"]],[0.5,"#312e81"],[1,C["accent"]]],
+        colorscale=[[0, C["s1"]], [0.5, "#312e81"], [1, C["accent"]]],
         text=[[str(v) for v in row] for row in cm],
         texttemplate="<b>%{text}</b>",
-        textfont=dict(size=24, color="white"),
+        textfont=dict(size=22, color="white"),
         showscale=False,
+        xgap=3, ygap=3,
         hovertemplate="Gerçek: %{y}<br>Tahmin: %{x}<br>Sayı: %{z}<extra></extra>",
     ))
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(17,24,39,0.7)",
-        font=dict(color=C["text"], family="Space Mono, monospace"),
-        margin=dict(l=10, r=10, t=48, b=10),
+        plot_bgcolor=PLOT_BG,
+        font=dict(color=C["text"], family=FONT_FAMILY, size=TICK_SIZE),
+        margin=dict(l=10, r=16, t=52, b=20),
         title=dict(text="<b>Confusion Matrix</b>",
-                   font=dict(size=14, color=C["text"]), x=0.01),
+                   font=dict(size=TITLE_SIZE, color=C["text"]), x=0.01, xanchor="left"),
         height=310,
-        hovermode="x unified",
+        hovermode="closest",
         dragmode="zoom",
-        xaxis=dict(title="Tahmin", gridcolor=C["border"]),
-        yaxis=dict(title="Gerçek", gridcolor=C["border"]),
-        hoverlabel=dict(bgcolor=C["s2"], font_color=C["text"],
-                        font_family="Space Mono"),
+        showlegend=False,
+        xaxis=dict(title=dict(text="Tahmin", font=dict(size=AXIS_TITLE, color=C["muted"])),
+                    showgrid=False, tickfont=dict(size=TICK_SIZE, color=C["muted"])),
+        yaxis=dict(title=dict(text="Gerçek", font=dict(size=AXIS_TITLE, color=C["muted"])),
+                    showgrid=False, tickfont=dict(size=TICK_SIZE, color=C["muted"])),
+        hoverlabel=hover_style(),
     )
     st.plotly_chart(fig, use_container_width=True, config=chart_config)
 
@@ -628,26 +576,26 @@ def _news_section(news, agg):
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=agg["avg_score"] * 100,
-        title={"text":"Genel Duygu Skoru",
-               "font":{"color":C["text"],"family":"Space Mono","size":13}},
-        number={"font":{"color":C["text"],"family":"Space Mono","size":24}},
+        title={"text": "Genel Duygu Skoru",
+               "font": {"color": C["muted"], "family": FONT_FAMILY, "size": TITLE_SIZE}},
+        number={"font": {"color": C["text"], "family": FONT_FAMILY, "size": 24}},
         gauge={
-            "axis":{"range":[-100,100],
-                    "tickcolor":C["muted"],
-                    "tickfont":{"color":C["muted"]}},
-            "bar":{"color":C["accent"],"thickness":0.22},
-            "bgcolor":C["s2"],
-            "borderwidth":1,"bordercolor":C["border"],
-            "steps":[
-                {"range":[-100,-10],"color":"rgba(239,68,68,0.12)"},
-                {"range":[-10,10],  "color":"rgba(245,158,11,0.07)"},
-                {"range":[10,100],  "color":"rgba(16,185,129,0.12)"},
+            "axis": {"range": [-100, 100],
+                     "tickcolor": C["muted"],
+                     "tickfont": {"color": C["muted"], "size": TICK_SIZE}},
+            "bar": {"color": C["accent"], "thickness": 0.18},
+            "bgcolor": C["s2"],
+            "borderwidth": 1, "bordercolor": rgba(C["muted"], 0.28),
+            "steps": [
+                {"range": [-100, -10], "color": rgba(C["red"], 0.12)},
+                {"range": [-10, 10],   "color": rgba(C["yellow"], 0.07)},
+                {"range": [10, 100],   "color": rgba(C["green"], 0.12)},
             ],
         }
     ))
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",
-                      font=dict(color=C["text"], family="Space Mono"),
-                      height=220, margin=dict(l=20,r=20,t=50,b=10))
+                      font=dict(color=C["text"], family=FONT_FAMILY),
+                      height=220, margin=dict(l=20, r=20, t=50, b=10))
     st.plotly_chart(fig, use_container_width=True)
 
     for n in news:
@@ -687,28 +635,31 @@ def _corr_chart(df):
 
     fig = px.imshow(
         corr, text_auto=".2f",
-        color_continuous_scale=[[0,C["red"]],[0.5,C["s1"]],[1,C["green"]]],
+        color_continuous_scale=[[0, C["red"]], [0.5, C["s1"]], [1, C["green"]]],
         zmin=-1, zmax=1,
         labels=dict(color="Korelasyon"),
     )
     fig.update_traces(
         textfont=dict(size=10, color="white"),
+        xgap=2, ygap=2,
         hovertemplate="<b>%{x}</b> × <b>%{y}</b><br>r = %{z:.3f}<extra></extra>",
     )
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(17,24,39,0.7)",
-        font=dict(color=C["text"], family="Space Mono, monospace"),
-        margin=dict(l=10, r=10, t=48, b=10),
+        plot_bgcolor=PLOT_BG,
+        font=dict(color=C["text"], family=FONT_FAMILY, size=TICK_SIZE),
+        margin=dict(l=10, r=16, t=52, b=10),
         title=dict(text="<b>Özellik Korelasyon Matrisi</b>",
-                   font=dict(size=14, color=C["text"]), x=0.01),
+                   font=dict(size=TITLE_SIZE, color=C["text"]), x=0.01, xanchor="left"),
         height=490,
-        xaxis=dict(gridcolor=C["border"], tickangle=-35),
-        yaxis=dict(gridcolor=C["border"]),
+        xaxis=dict(showgrid=False, tickangle=-35, tickfont=dict(size=TICK_SIZE, color=C["muted"])),
+        yaxis=dict(showgrid=False, tickfont=dict(size=TICK_SIZE, color=C["muted"])),
         coloraxis_colorbar=dict(
-            tickfont=dict(color=C["text"]),
-            title=dict(text="r", font=dict(color=C["text"])),
+            tickfont=dict(color=C["muted"], size=TICK_SIZE),
+            title=dict(text="r", font=dict(color=C["muted"])),
+            thickness=12, outlinewidth=0,
         ),
+        hoverlabel=hover_style(),
     )
     st.plotly_chart(fig, use_container_width=True)
 
