@@ -232,7 +232,7 @@ def _disclaimer_note():
         </div>""", unsafe_allow_html=True)
     with link_col:
         if st.button("Yasal Uyari", key="dashboard_disclaimer_link", use_container_width=True):
-            st.session_state["nav_page"] = "Yasal Uyari"
+            st.session_state["nav_redirect"] = "Yasal Uyari"
             st.rerun()
 
 

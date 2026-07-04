@@ -228,6 +228,10 @@ with st.sidebar:
         pass
     st.markdown("---")
 
+    # nav_page widget'i olusturulmadan once bekleyen bir yonlendirme varsa uygula
+    if "nav_redirect" in st.session_state:
+        st.session_state["nav_page"] = st.session_state.pop("nav_redirect")
+
     page = st.radio(
         "NAVİGASYON",
         ["📊  Dashboard", "🤖  Model Eğitimi", "📰  Haber Analizi", "📈  Backtest", "Karsilastirma", "💼  Portföyüm", "⏰  Alarmlar", "Yasal Uyari"],
