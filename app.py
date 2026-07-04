@@ -230,7 +230,7 @@ with st.sidebar:
 
     page = st.radio(
         "NAVİGASYON",
-        ["📊  Dashboard", "🤖  Model Eğitimi", "📰  Haber Analizi", "📈  Backtest", "💼  Portföyüm", "⏰  Alarmlar", "Yasal Uyari"],
+        ["📊  Dashboard", "🤖  Model Eğitimi", "📰  Haber Analizi", "📈  Backtest", "Karsilastirma", "💼  Portföyüm", "⏰  Alarmlar", "Yasal Uyari"],
         label_visibility="visible",
         key="nav_page"
     )
@@ -272,6 +272,9 @@ elif "📰" in page:
 elif "📈" in page:
     from pages.backtest import show_backtest
     show_backtest(selected_symbol, effective_period, interval=interval)
+elif "Karsilastirma" in page:
+    from pages.comparison import show_comparison
+    show_comparison(effective_period, interval)
 elif "💼" in page:
     from pages.portfolio import show_portfolio
     show_portfolio()
