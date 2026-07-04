@@ -230,8 +230,9 @@ with st.sidebar:
 
     page = st.radio(
         "NAVİGASYON",
-        ["📊  Dashboard", "🤖  Model Eğitimi", "📰  Haber Analizi", "📈  Backtest", "💼  Portföyüm", "⏰  Alarmlar"],
-        label_visibility="visible"
+        ["📊  Dashboard", "🤖  Model Eğitimi", "📰  Haber Analizi", "📈  Backtest", "💼  Portföyüm", "⏰  Alarmlar", "Yasal Uyari"],
+        label_visibility="visible",
+        key="nav_page"
     )
 
     st.markdown("---")
@@ -277,4 +278,7 @@ elif "💼" in page:
 elif "⏰" in page:
     from pages.alarms import show_alarms
     show_alarms()
+elif "Yasal Uyari" in page:
+    from pages.disclaimer import show_disclaimer
+    show_disclaimer()
 

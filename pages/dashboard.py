@@ -66,6 +66,7 @@ def pl(title="", height=350, **extra):
 def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
     st.markdown('<p class="section-title">// ANA DASHBOARD</p>',
                 unsafe_allow_html=True)
+    _disclaimer_note()
     if not run_analysis:
         _welcome(); return
 
@@ -213,6 +214,21 @@ def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
                 color:{C['muted']};font-size:0.75rem;font-family:'Space Mono',monospace;">
       Veri kaynagi: Yahoo Finance | Son guncelleme: {last_update.strftime('%Y-%m-%d %H:%M:%S')}
     </div>""", unsafe_allow_html=True)
+
+
+# ── Yasal uyari notu ──────────────────────────────────────────────────────────
+def _disclaimer_note():
+    note_col, link_col = st.columns([5, 1])
+    with note_col:
+        st.markdown(f"""
+        <div style="color:{C['muted']};font-size:0.75rem;
+                    font-family:'Space Mono',monospace;padding-top:0.4rem;">
+          Bu platform egitim ve bilgilendirme amaclidir, yatirim tavsiyesi degildir.
+        </div>""", unsafe_allow_html=True)
+    with link_col:
+        if st.button("Yasal Uyari", key="dashboard_disclaimer_link", use_container_width=True):
+            st.session_state["nav_page"] = "Yasal Uyari"
+            st.rerun()
 
 
 # ── Kart helper ───────────────────────────────────────────────────────────────
