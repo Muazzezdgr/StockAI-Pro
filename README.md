@@ -1,124 +1,100 @@
-# 📈 StockAI Pro — Hisse Senedi Yön Tahmini
-**Yapay Zeka 2 | Final Projesi | Proje Kodu: C-5**
+# StockAI Pro
 
-Grup: Muazzez Doğru (271) · Yunus Emre Kaymakcı (221) · Elif Yıldırım (220)
+StockAI Pro, hisse senedi, kripto para ve BIST piyasalarını yapay zeka
+modelleriyle analiz eden bir karar destek platformudur. LSTM ve Random
+Forest tabanlı modellerle fiyat yönü tahmini yapar, haber duygu analizini
+teknik göstergelerle birleştirir ve tüm tahminlerin arkasındaki güven
+düzeyini şeffaf biçimde gösterir.
 
----
+Streamlit üzerine kurulmuş olan uygulama, tek bir dosyayı çalıştırarak
+tarayıcıda açılan interaktif bir dashboard sunar; kurulum veya sunucu
+yönetimi gerektirmez.
 
-## 🚀 EN KOLAY ÇALIŞTIRMA (Windows)
+## Özellikler
 
-### ✅ Tek Tıkla Başlat
-1. Bu klasörü bilgisayarınıza çıkarın
-2. **`CALISTIR.bat`** dosyasına **çift tıklayın**
-3. Tarayıcı otomatik açılır → `http://localhost:8501`
+- **Çoklu piyasa desteği**: ABD hisseleri (NASDAQ/NYSE), BIST 30 şirketi ve
+  başlıca kripto paralar (BTC, ETH, BNB, SOL ve diğerleri) tek arayüzden
+  analiz edilir
+- **AI destekli yön tahmini**: LSTM ve Random Forest modelleriyle fiyat
+  yönü ve güven skoru üretilir
+- **Haber duygu analizi**: İlgili sembole ait haberler NLP ile taranır ve
+  pozitif/negatif/nötr olarak sınıflandırılır
+- **Portföy takibi**: Sahip olunan varlıkları kaydedip güncel değer ve
+  kâr/zarar durumunu anlık izleme
+- **Fiyat alarmları**: Belirlenen seviyelere ulaşıldığında bildirim alma
+- **Karşılaştırmalı analiz**: İki sembolü yan yana; fiyat, teknik gösterge
+  ve model güveni açısından kıyaslama
+- **PDF rapor dışa aktarma**: Analiz sonuçlarını paylaşılabilir bir rapora
+  dönüştürme
+- **Backtest simülasyonu**: Model stratejisini geçmiş veri üzerinde
+  Buy & Hold ile karşılaştırma
+- **Teknik gösterge kütüphanesi**: RSI, MACD ve benzeri 20'den fazla
+  gösterge ile zenginleştirilmiş analiz
 
-> ⚠️ Python kurulu değilse: https://www.python.org/downloads/
-> Python indirirken **"Add to PATH"** seçeneğini işaretleyin!
+## Neden Farklı
 
----
+**Şeffaflık önce gelir.** Model güven skoru kara kutu bir sayı değildir;
+nasıl hesaplandığı ve neyi ifade ettiği kullanıcıya açıkça anlatılır.
+Backtest sonuçları da az sayıda işlem üretildiğinde istatistiksel olarak
+anlamlı olmayabileceği konusunda kullanıcıyı uyarır — sonuçlar abartılı bir
+güvenle sunulmaz.
 
-## 🔧 Manuel Çalıştırma (Terminal ile)
+**Yerel piyasa desteği.** BIST 30 şirketleri uygulamaya özel olarak
+tanımlanmıştır; Türkiye piyasasıyla ilgilenen kullanıcılar için ayrı bir
+entegrasyon aranmasına gerek kalmaz.
+
+**Açık geliştirme süreci.** Proje, geri bildirimlerle adım adım
+şekillenen, geliştirmeye açık bir kaynak koddur.
+
+## Kurulum
+
+### Tek tıkla çalıştırma (Windows)
+
+1. Proje klasörünü bilgisayarınıza indirin
+2. `CALISTIR.bat` dosyasına çift tıklayın
+3. Tarayıcı otomatik olarak `http://localhost:8501` adresinde açılır
+
+Python kurulu değilse [python.org](https://www.python.org/downloads/)
+adresinden indirin ve kurulum sırasında **"Add to PATH"** seçeneğini
+işaretleyin.
+
+### Manuel kurulum
 
 ```bash
-# 1. Kütüphaneleri kur
+# Gerekli kütüphaneleri kur
 pip install -r requirements.txt
 
-# 2. Uygulamayı başlat
-python -m streamlit run app.py
-
-# 3. Tarayıcıda aç
-# http://localhost:8501
+# Uygulamayı başlat
+streamlit run app.py
 ```
 
----
+Uygulama açıldıktan sonra `http://localhost:8501` adresinden erişilebilir.
 
-## 📓 Google Colab Notebook
+## Kullanılan Teknolojiler
 
-`stock_prediction_pro.ipynb` dosyasını Colab'da çalıştırmak için:
+- **Python** — temel geliştirme dili
+- **Streamlit** — interaktif web arayüzü
+- **LSTM (derin öğrenme)** — zaman serisi fiyat tahmini
+- **Random Forest** — sınıflandırma tabanlı yön tahmini
+- **yfinance** — hisse, kripto ve BIST verisi
+- **scikit-learn** — model eğitimi ve değerlendirme
+- **Plotly** — interaktif grafikler
+- **fpdf2** — PDF rapor oluşturma
 
-1. https://colab.research.google.com adresine gidin
-2. **Dosya → Not Defteri Yükle** → `stock_prediction_pro.ipynb` seçin
-3. **Tümünü Çalıştır** (Ctrl+F9)
+## Ekran Görüntüsü
 
----
+*(Uygulamanın bir ekran görüntüsünü buraya ekleyebilirsiniz.)*
 
-## 📁 Proje Yapısı
+## Yasal Uyarı
 
-```
-📦 90240000271_90240000221_90240000220_C5/
-│
-├── 🚀 CALISTIR.bat                  ← Çift tıkla, otomatik başlar!
-├── 📄 README.md                     ← Bu dosya
-├── 📋 veri_seti_linki.txt           ← Veri kaynağı bilgisi
-│
-├── 🐍 app.py                        ← Ana Streamlit uygulaması
-├── 📓 stock_prediction_pro.ipynb    ← Google Colab notebook
-├── 📋 requirements.txt              ← Gerekli kütüphaneler
-│
-├── 📊 StockAI_Pro_SUNUM.pptx        ← Sunum dosyası
-├── 📄 StockAI_Pro_RAPOR.pdf         ← Teknik rapor (PDF)
-│
-├── 📁 pages/
-│   ├── dashboard.py                 ← Ana dashboard
-│   ├── model_training.py            ← Model eğitimi
-│   ├── news_analysis.py             ← Haber duygu analizi
-│   ├── backtest.py                  ← Strateji backtest
-│   └── about.py                     ← Hakkında
-│
-└── 📁 utils/
-    ├── data_utils.py                ← Veri + 21 teknik gösterge
-    ├── model_utils.py               ← LSTM + Random Forest
-    └── sentiment_utils.py           ← NLP haber analizi
-```
+Bu uygulama yalnızca bilgilendirme ve eğitim amaçlıdır; yatırım tavsiyesi
+niteliği taşımaz. Model tahminleri geçmiş verilere dayalı istatistiksel
+çıkarımlardır ve gelecekteki fiyat hareketlerini garanti etmez. Yatırım
+kararlarınızı vermeden önce bağımsız bir finansal danışmana başvurun.
 
----
+## Lisans ve İletişim
 
-## 🖥️ Uygulama Nasıl Kullanılır?
+Geliştirici: **Muazzez Doğru**
 
-### Senaryo 1 — Hisse Analizi (Dashboard)
-1. Sol panelden **ABD** veya **BIST** piyasası seçin
-2. Hisse senedi seçin (AAPL, TSLA, THYAO.IS...)
-3. **ANALİZİ BAŞLAT** butonuna tıklayın
-4. Dashboard'da fiyat, RSI, MACD, model tahmini görüntülenir
-
-### Senaryo 2 — Model Eğitimi
-1. Sol menüden **Model Eğitimi** sayfasına gidin
-2. Model seçin: Random Forest / LSTM / Gradient Boosting
-3. **MODELİ EĞİT** butonuna tıklayın
-4. ROC eğrisi, Confusion Matrix, Feature Importance görüntülenir
-
-### Senaryo 3 — Backtest Simülasyonu
-1. Sol menüden **Backtest** sayfasına gidin
-2. Başlangıç sermayesi ve parametreleri ayarlayın
-3. **BACKTEST ÇALIŞTIR** butonuna tıklayın
-4. Model stratejisi vs Buy&Hold karşılaştırması görüntülenir
-
----
-
-## 📦 Teslim Edilen Dosyalar
-
-| # | Dosya | Açıklama |
-|---|-------|----------|
-| 1 | `stock_prediction_pro.ipynb` | Tüm kodlar (veri, model, sonuç) |
-| 2 | `StockAI_Pro_RAPOR.pdf` | Teknik rapor |
-| 3 | `StockAI_Pro_SUNUM.pptx` | Sunum (16 slayt) |
-| 4 | `app.py` + `pages/` + `utils/` | Arayüz kaynak kodu |
-| 5 | `veri_seti_linki.txt` | Veri seti linki (yfinance API) |
-
----
-
-## ⚙️ Gereksinimler
-
-- Python 3.9 veya üzeri
-- İnternet bağlantısı (yfinance veri çeker)
-- Tarayıcı (Chrome/Firefox/Edge)
-
----
-
-## 👥 Grup Bilgileri
-
-| Öğrenci | No | Sorumluluk |
-|---------|-----|-----------|
-| Muazzez Doğru | 90240000271 | Proje koordinasyonu, Streamlit arayüz |
-| Yunus Emre Kaymakcı | 90240000221 | LSTM + RF model geliştirme |
-| Elif Yıldırım | 90240000220 | Veri işleme, NLP, Colab notebook |
+Sorularınız veya katkı önerileriniz için proje deposu üzerinden iletişime
+geçebilirsiniz.
