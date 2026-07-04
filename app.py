@@ -261,7 +261,12 @@ with st.sidebar:
         st.info("⚠️ Saatlik veri daha güncel sinyaller verir ancak kısa vadeli gürültüye (noise) daha duyarlıdır; model güven skorunu buna göre yorumlayın.")
 
     st.markdown("---")
-    run_analysis = st.button("🚀  ANALİZİ BAŞLAT", use_container_width=True)
+    if st.button("🚀  ANALİZİ BAŞLAT", use_container_width=True):
+        st.session_state["analysis_active"] = True
+    # analysis_active session_state'te tutulur, boylece dashboard uzerindeki
+    # otomatik yenileme gibi diger widget etkilesimleri sayfayi karsilama
+    # ekranina geri dondurmez.
+    run_analysis = st.session_state.get("analysis_active", False)
 
 # ── Route to pages ───────────────────────────────────────────────────────────
 if "📊" in page:

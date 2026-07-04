@@ -150,6 +150,8 @@ def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
       </div>
     </div>""", unsafe_allow_html=True)
 
+    _live_price_section(symbol)
+
     # ── 5 Metrik Kartı ────────────────────────────────────────────────────────
     c1,c2,c3,c4,c5 = st.columns(5)
     _card(c1, "📊 Piyasa Değeri",
@@ -234,6 +236,70 @@ def _disclaimer_note():
         if st.button("Yasal Uyari", key="dashboard_disclaimer_link", use_container_width=True):
             st.session_state["nav_redirect"] = "Yasal Uyari"
             st.rerun()
+
+
+# ── Canli Fiyat Takibi ─────────────────────────────────────────────────────────
+def _live_price_section(symbol):
+    tcol, scol = st.columns([1, 3])
+    with tcol:
+        auto_refresh = st.toggle(
+            "Otomatik Yenileme",
+            value=st.session_state.get("auto_refresh_enabled", False),
+            key="auto_refresh_enabled",
+            help="Acildiginda fiyat, RSI ve MACD degerleri 30 saniyede bir "
+                 "otomatik olarak yenilenir. Model tahmini ve haber analizi "
+                 "bu yenilemeye dahil degildir, bu yuzden yeniden egitim "
+                 "yapilmaz.",
+        )
+    refresh_interval = 30 if auto_refresh else None
+
+    @st.fragment(run_every=refresh_interval)
+    def _live_refresh():
+        try:
+            live_df = fetch_stock_data(symbol, period="6mo", interval="1d")
+        except Exception:
+            live_df = None
+
+        if live_df is None or live_df.empty or len(live_df) < 2:
+            st.markdown(f"""
+            <div style="color:{C['muted']};font-size:0.78rem;
+                        font-family:'Space Mono',monospace;padding:0.5rem 0;">
+              Canli veri alinamadi.
+            </div>""", unsafe_allow_html=True)
+            return
+
+        live_last   = float(live_df["Close"].iloc[-1])
+        live_prev   = float(live_df["Close"].iloc[-2])
+        live_change = (live_last - live_prev) / live_prev * 100
+        live_rsi    = float(live_df["RSI"].iloc[-1])
+        live_macd   = float(live_df["MACD_Hist"].iloc[-1])
+        chg_color   = C["green"] if live_change >= 0 else C["red"]
+        now_str     = datetime.now().strftime("%H:%M:%S")
+
+        st.markdown(f"""
+        <div style="background:{C['s2']};border:1px solid {C['border']};
+                    border-radius:10px;padding:0.65rem 1.2rem;margin-bottom:0.8rem;
+                    display:flex;flex-wrap:wrap;gap:1.8rem;align-items:center;
+                    font-family:'Space Mono',monospace;">
+          <div style="color:{C['text']};font-size:1rem;font-weight:700;">
+            ${live_last:,.2f}
+            <span style="color:{chg_color};font-size:0.82rem;font-weight:700;">
+              {'+' if live_change >= 0 else ''}{live_change:.2f}%
+            </span>
+          </div>
+          <div style="color:{C['muted']};font-size:0.78rem;">
+            RSI <span style="color:{C['text']};">{live_rsi:.1f}</span>
+          </div>
+          <div style="color:{C['muted']};font-size:0.78rem;">
+            MACD Hist <span style="color:{C['text']};">{live_macd:+.4f}</span>
+          </div>
+          <div style="color:{C['muted']};font-size:0.72rem;margin-left:auto;">
+            Son guncelleme: {now_str}
+          </div>
+        </div>""", unsafe_allow_html=True)
+
+    with scol:
+        _live_refresh()
 
 
 # ── PDF Rapor Disa Aktarma ─────────────────────────────────────────────────────
