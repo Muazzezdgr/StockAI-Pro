@@ -13,6 +13,7 @@ from utils.data_utils import (fetch_stock_data, get_ticker_info,
     format_market_cap, compute_signal, prepare_rf_data)
 from utils.sentiment_utils import fetch_news, aggregate_sentiment
 from utils.model_utils import train_random_forest, evaluate_model, get_feature_importance
+from utils.pdf_report import generate_pdf_report
 
 # ────────────────────────────────────────────────────────────────────────────
 C = {
@@ -208,6 +209,10 @@ def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
     with tab4:
         _corr_chart(df)
 
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    _pdf_export_button(symbol, info, df, last, change, rsi_v, macd_h,
+                        pred_prob, signal, sent_agg, news, last_update)
+
     # Veri kaynagi bilgisi
     st.markdown(f"""
     <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid {C['border']};
@@ -229,6 +234,25 @@ def _disclaimer_note():
         if st.button("Yasal Uyari", key="dashboard_disclaimer_link", use_container_width=True):
             st.session_state["nav_page"] = "Yasal Uyari"
             st.rerun()
+
+
+# ── PDF Rapor Disa Aktarma ─────────────────────────────────────────────────────
+def _pdf_export_button(symbol, info, df, last, change, rsi_v, macd_h,
+                        pred_prob, signal, sent_agg, news, last_update):
+    try:
+        pdf_bytes = generate_pdf_report(
+            symbol, info, df, last, change, rsi_v, macd_h,
+            pred_prob, signal, sent_agg, news, last_update,
+        )
+        st.download_button(
+            "📄  PDF RAPOR İNDİR",
+            data=pdf_bytes,
+            file_name=f"{symbol}_StockAI_Rapor_{last_update.strftime('%Y%m%d_%H%M')}.pdf",
+            mime="application/pdf",
+            use_container_width=True,
+        )
+    except Exception:
+        st.warning("PDF rapor olusturulamadi. Lutfen tekrar deneyin.")
 
 
 # ── Kart helper ───────────────────────────────────────────────────────────────
