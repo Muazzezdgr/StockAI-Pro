@@ -1,0 +1,3 @@
+# Geliştirme ve test bağımlılıkları (Streamlit Cloud bunları kurmaz)
+-r requirements.txt
+pytest>=8.0
