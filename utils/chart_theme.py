@@ -31,13 +31,15 @@ TICK_SIZE   = 10.5
 LEGEND_SIZE = 10.5
 HOVER_SIZE  = 11.5
 
-# ── Tutarli, ince/zarif cizgi kalinliklari ───────────────────────────────────
+# ── Tutarli, ince/zarif cizgi kalinliklari (1-1.5px araligi) ─────────────────
 LINE_HAIR   = 1.0   # yardimci / ikincil cizgiler (MA10, referans cizgileri)
-LINE_THIN   = 1.3   # ikincil seri (MA50, sinyal cizgisi)
-LINE_REG    = 1.5   # standart seri (RSI, MACD, karsilastirma)
-LINE_MAIN   = 1.75  # birincil / vurgulanan seri (MA20, model getirisi, ROC)
+LINE_THIN   = 1.15  # ikincil seri (MA50, sinyal cizgisi)
+LINE_REG    = 1.3   # standart seri (RSI, MACD, karsilastirma)
+LINE_MAIN   = 1.5   # birincil / vurgulanan seri (MA20, model getirisi, ROC)
 
-PLOT_BG = "rgba(17,24,39,0.55)"
+# Grafik arka plani sayfa arka planiyla ayni (seffaf) olsun; grafik "yuzmesin",
+# sayfaya entegre gorunsun. Sadece izgara/veri gorunur kalir.
+PLOT_BG = "rgba(0,0,0,0)"
 
 
 def hex_to_rgb(hex_color):
@@ -51,9 +53,13 @@ def rgba(hex_color, alpha):
     return f"rgba({r},{g},{b},{alpha})"
 
 
-# Izgaralar cok belirgin olmasin: muted renk, dusuk opaklik
-GRID_COLOR = rgba(COLORS["muted"], 0.14)
-AXIS_LINE_COLOR = rgba(COLORS["muted"], 0.28)
+# Izgaralar cok belirgin olmasin: muted renk, dusuk opaklik (0.1-0.15 araligi)
+GRID_COLOR = rgba(COLORS["muted"], 0.12)
+AXIS_LINE_COLOR = rgba(COLORS["muted"], 0.25)
+
+# Kart/panel kenarliklari icin dusuk kontrastli, notr border tonlari
+BORDER_SOFT = rgba(COLORS["border"], 0.55)
+BORDER_FAINT = rgba(COLORS["border"], 0.32)
 
 
 def area_fillgradient(hex_color, top_alpha=0.24, bottom_alpha=0.0):
@@ -94,7 +100,7 @@ def bottom_legend(**extra):
 def hover_style(**extra):
     base = dict(
         bgcolor=rgba(COLORS["s2"], 0.95),
-        bordercolor=COLORS["border"],
+        bordercolor=BORDER_SOFT,
         font=dict(color=COLORS["text"], family=FONT_FAMILY, size=HOVER_SIZE),
     )
     base.update(extra)

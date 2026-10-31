@@ -9,37 +9,20 @@ import numpy as np
 from utils.data_utils import fetch_stock_data, prepare_rf_data
 from utils.model_utils import train_random_forest
 from utils.chart_theme import (COLORS as C, FONT_FAMILY, PLOT_BG,
-    LINE_THIN, LINE_MAIN, TITLE_SIZE, base_axis, bottom_legend,
-    hover_style, rgba, area_fillgradient, modebar_config)
-
-def _card(col, label, value, sub="", color=None):
-    color = color or C["accent"]
-    with col:
-        st.markdown(f"""
-        <div style="background:{C['s2']};border:1px solid {C['border']};
-                    border-left:3px solid {color};border-radius:10px;
-                    padding:0.85rem 1rem;margin-bottom:0.5rem;">
-          <div style="color:{C['muted']};font-size:0.7rem;font-family:'Space Mono',monospace;
-                      letter-spacing:1px;text-transform:uppercase;">{label}</div>
-          <div style="color:{C['text']};font-size:1.35rem;font-weight:700;
-                      font-family:'Space Mono',monospace;margin:4px 0;">{value}</div>
-          <div style="color:{color};font-size:0.74rem;">{sub}</div>
-        </div>""", unsafe_allow_html=True)
+    LINE_THIN, LINE_MAIN, TITLE_SIZE, BORDER_SOFT, BORDER_FAINT, base_axis,
+    bottom_legend, hover_style, rgba, area_fillgradient, modebar_config)
+from utils.ui import metric_card as _card, info_box, section_gap
 
 def show_backtest(symbol, period, interval="1d"):
     st.markdown('<p class="section-title">// STRATEJİ BACKTEST SİMÜLASYONU</p>',
                 unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div style="background:{C['s2']};border:1px solid {C['border']};
-                border-left:3px solid {C['yellow']};border-radius:10px;
-                padding:1rem 1.4rem;margin-bottom:1.2rem;font-size:0.85rem;
-                color:{C['muted']};line-height:1.8;">
-      <b style="color:{C['yellow']}">Backtest Nedir?</b>
-      Model tahminlerine göre hisse alım/satım yapıldığında elde edilecek
-      getiriyi geçmiş veriyle simüle eder. <b style="color:{C['text']}">
-      Buy &amp; Hold</b> stratejisiyle karşılaştırılır.
-    </div>""", unsafe_allow_html=True)
+    info_box(
+        "Model tahminlerine göre hisse alım/satım yapıldığında elde edilecek "
+        "getiriyi geçmiş veriyle simüle eder. "
+        "<b style='color:%s'>Buy &amp; Hold</b> stratejisiyle karşılaştırılır." % C["text"],
+        title="Backtest Nedir?",
+    )
 
     # Parametreler
     c1,c2,c3 = st.columns(3)
@@ -158,7 +141,7 @@ def show_backtest(symbol, period, interval="1d"):
           color=C["green"] if ret_m>ret_bh else C["red"])
     _card(mc4,"🎯 Kazanma Oranı",f"{win_rate:.0f}%",
           sub=f"{trades} işlem",
-          color=C["green"] if win_rate>50 else C["yellow"])
+          color=C["green"] if win_rate>50 else C["red"])
     _card(mc5,"📉 Max Drawdown",f"{max_dd:.1f}%",
           color=C["red"] if max_dd < -10 else C["yellow"])
 
@@ -175,13 +158,13 @@ def show_backtest(symbol, period, interval="1d"):
     if trades < 5:
         st.warning("Az sayıda işlem nedeniyle bu sonuclar istatistiksel olarak anlamli degildir, yorumlarken dikkatli olun.")
 
-    st.markdown("<div style='color:%s;font-size:0.85rem;'>" % C["muted"] +
+    st.markdown("<div style='color:%s;font-size:var(--fs-body);'>" % C["muted"] +
                 "Kazanma oranı (trade başına başarı) ile toplam getiri farklı metriklerdir; " +
                 "kazanma oranı düşük olsa dahi büyük kazançlı işlemler toplam getiriyi pozitif yapabilir, " +
                 "veya tersi de geçerlidir. Bu iki metriği birlikte değerlendiriniz." +
                 "</div>", unsafe_allow_html=True)
 
-    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    section_gap("sm")
 
     # ── Ana grafik ────────────────────────────────────────────────────────────
     fig = go.Figure()
@@ -221,28 +204,28 @@ def show_backtest(symbol, period, interval="1d"):
     # ── İşlem geçmişi ─────────────────────────────────────────────────────────
     if trade_log:
         st.markdown(f"""
-        <div style="color:{C['accent']};font-size:0.7rem;letter-spacing:2px;
-                    text-transform:uppercase;margin-bottom:0.6rem;">
+        <div style="color:{C['accent']};font-size:var(--fs-small);letter-spacing:2px;
+                    text-transform:uppercase;margin-bottom:var(--space-2);">
           İşlem Geçmişi (Son {min(8,len(trade_log))} işlem)
         </div>""", unsafe_allow_html=True)
 
         rows = "".join(
-            f'<tr style="border-bottom:1px solid {C["border"]};">'
+            f'<tr style="border-bottom:1px solid {BORDER_FAINT};">'
             f'<td style="padding:6px 8px;color:{C["muted"]}">Gün {t["gün"]}</td>'
             f'<td style="padding:6px 8px;color:{C["text"]}">${t["giriş"]:.2f}</td>'
             f'<td style="padding:6px 8px;color:{C["text"]}">${t["çıkış"]:.2f}</td>'
-            f'<td style="padding:6px 8px;color:{"#10b981" if t["kar"]>0 else "#ef4444"}">'
+            f'<td style="padding:6px 8px;color:{C["green"] if t["kar"]>0 else C["red"]}">'
             f'{t["kar"]:+.2f}%</td>'
             f'<td style="padding:6px 8px">{t["sonuç"]}</td>'
             f'</tr>'
             for t in trade_log[-8:]
         )
         st.markdown(f"""
-        <div style="background:{C['s2']};border:1px solid {C['border']};
-                    border-radius:10px;padding:1rem;overflow-x:auto;">
+        <div style="background:{C['s2']};border:1px solid {BORDER_SOFT};
+                    border-radius:10px;padding:var(--space-3);overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;
-                        font-family:'Space Mono',monospace;font-size:0.8rem;">
-            <tr style="color:{C['muted']};border-bottom:1px solid {C['border']};">
+                        font-family:'Space Mono',monospace;font-size:var(--fs-body);">
+            <tr style="color:{C['muted']};border-bottom:1px solid {BORDER_FAINT};">
               <th style="padding:6px 8px;text-align:left">Tarih</th>
               <th style="padding:6px 8px;text-align:left">Giriş</th>
               <th style="padding:6px 8px;text-align:left">Çıkış</th>

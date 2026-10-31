@@ -5,35 +5,8 @@ import streamlit as st
 import pandas as pd
 
 from utils.data_utils import fetch_stock_data
-
-C = {
-    "bg": "#0a0e1a",
-    "s1": "#111827",
-    "s2": "#1a2235",
-    "border": "#1e2d45",
-    "accent": "#00d4ff",
-    "purple": "#7c3aed",
-    "green": "#10b981",
-    "red": "#ef4444",
-    "yellow": "#f59e0b",
-    "text": "#e2e8f0",
-    "muted": "#64748b",
-}
-
-
-def _card(col, label, value, sub="", color=None):
-    color = color or C["accent"]
-    with col:
-        st.markdown(f"""
-        <div style="background:{C['s2']};border:1px solid {C['border']};
-                    border-left:3px solid {color};border-radius:10px;
-                    padding:0.85rem 1rem;margin-bottom:0.5rem;">
-          <div style="color:{C['muted']};font-size:0.7rem;font-family:'Space Mono',monospace;
-                      letter-spacing:1px;text-transform:uppercase;">{label}</div>
-          <div style="color:{C['text']};font-size:1.35rem;font-weight:700;
-                      font-family:'Space Mono',monospace;margin:4px 0;">{value}</div>
-          <div style="color:{color};font-size:0.74rem;">{sub}</div>
-        </div>""", unsafe_allow_html=True)
+from utils.chart_theme import COLORS as C, BORDER_SOFT, BORDER_FAINT
+from utils.ui import metric_card as _card, info_box, section_gap
 
 
 def _format_currency(value):
@@ -45,15 +18,11 @@ def _format_currency(value):
 def show_portfolio():
     st.markdown('<p class="section-title">// PORTFÖYÜM</p>', unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div style="background:{C['s2']};border:1px solid {C['border']};
-                border-left:3px solid {C['accent']};border-radius:10px;
-                padding:1rem 1.4rem;margin-bottom:1.2rem;font-size:0.85rem;
-                color:{C['muted']};line-height:1.8;">
-      <b style="color:{C['accent']}">Portföy Takibi:</b>
-      Sembol, adet ve alış fiyatını girerek varlıklarınızı takip edebilirsiniz.
-      Portföy verisi bu oturum boyunca saklanır.
-    </div>""", unsafe_allow_html=True)
+    info_box(
+        "Sembol, adet ve alış fiyatını girerek varlıklarınızı takip edebilirsiniz. "
+        "Portföy verisi bu oturum boyunca saklanır.",
+        title="Portföy Takibi:",
+    )
 
     if "portfolio" not in st.session_state:
         st.session_state["portfolio"] = []
@@ -67,7 +36,7 @@ def show_portfolio():
         with c3:
             buy_price = st.number_input("Alış Fiyatı", min_value=0.0, step=1.0, format="%.6f")
         with c4:
-            st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
+            section_gap("lg")
             submitted = st.form_submit_button("➕ Portföye Ekle", use_container_width=True)
 
         if submitted:
@@ -135,9 +104,9 @@ def show_portfolio():
     c1, c2, c3 = st.columns(3)
     _card(c1, "💰 Toplam Portföy Değeri", _format_currency(total_value), color=C["accent"])
     _card(c2, "📈 Toplam Kar/Zarar", f"{total_pnl:+.2f} ₺", color=C["green"] if total_pnl >= 0 else C["red"])
-    _card(c3, "📊 Toplam Maliyet", _format_currency(total_cost), color=C["yellow"])
+    _card(c3, "📊 Toplam Maliyet", _format_currency(total_cost), color=C["purple"])
 
-    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    section_gap("sm")
 
     display_df = pd.DataFrame([
         {
@@ -154,14 +123,18 @@ def show_portfolio():
     ])
 
     if not display_df.empty:
+        # Not: pandas Styler kendi kapsamli <style> etiketini uretir, ana
+        # sayfanin :root CSS degiskenlerini miras almayabilir - bu yuzden
+        # burada var(--fs-*) yerine ayni degerlerin sabit karsiliklari
+        # (chart_theme.BORDER_FAINT gibi literal rgba degerleri) kullanilir.
         styler = display_df.style.set_properties(**{
             "font-family": "Space Mono, monospace",
-            "font-size": "0.82rem",
+            "font-size": "14px",
             "color": C["text"],
             "background-color": C["s2"],
         }).set_table_styles([
-            {"selector": "th", "props": [("background-color", C["s1"]), ("color", C["muted"]), ("border-bottom", f"1px solid {C['border']}")]},
-            {"selector": "td", "props": [("border-bottom", f"1px solid {C['border']}")]},
+            {"selector": "th", "props": [("background-color", C["s1"]), ("color", C["muted"]), ("border-bottom", f"1px solid {BORDER_FAINT}")]},
+            {"selector": "td", "props": [("border-bottom", f"1px solid {BORDER_FAINT}")]},
         ])
 
         def color_pnl(val):
@@ -174,13 +147,13 @@ def show_portfolio():
         styler = styler.map(color_pnl, subset=["Kar/Zarar (₺)", "Kar/Zarar (%)"])
         st.dataframe(styler, use_container_width=True, hide_index=True)
 
-    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+    section_gap("md")
     delete_col, delete_btn = st.columns([3, 1])
     with delete_col:
         symbols = [item["symbol"] for item in portfolio]
         selected_to_delete = st.selectbox("Silinecek varlık", symbols, key="delete_symbol")
     with delete_btn:
-        st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
+        section_gap("lg")
         if st.button("🗑️ Sil", use_container_width=True):
             st.session_state["portfolio"] = [item for item in portfolio if item["symbol"] != selected_to_delete]
             st.success(f"✅  {selected_to_delete} portföyden kaldırıldı.")

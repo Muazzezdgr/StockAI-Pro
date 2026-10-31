@@ -6,19 +6,8 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime
 
-C = {
-    "bg": "#0a0e1a",
-    "s1": "#111827",
-    "s2": "#1a2235",
-    "border": "#1e2d45",
-    "accent": "#00d4ff",
-    "purple": "#7c3aed",
-    "green": "#10b981",
-    "red": "#ef4444",
-    "yellow": "#f59e0b",
-    "text": "#e2e8f0",
-    "muted": "#64748b",
-}
+from utils.chart_theme import COLORS as C, BORDER_SOFT, BORDER_FAINT
+from utils.ui import info_box, section_gap
 
 
 def get_current_price(symbol: str) -> dict:
@@ -67,15 +56,11 @@ def check_alarms():
 def show_alarms():
     st.markdown('<p class="section-title">// FIYAT ALARLARI</p>', unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div style="background:{C['s2']};border:1px solid {C['border']};
-                border-left:3px solid {C['yellow']};border-radius:10px;
-                padding:1rem 1.4rem;margin-bottom:1.2rem;font-size:0.85rem;
-                color:{C['muted']};line-height:1.8;">
-      <b style="color:{C['yellow']}">Bilgi:</b>
-      Bu alarmlar yalnizca sayfa acikken kontrol edilir. Arka planda bildirim gonderilmez.
-      Sayfayi kapat veya yenile oldugunda alarmlar sifirlanir.
-    </div>""", unsafe_allow_html=True)
+    info_box(
+        "Bu alarmlar yalnizca sayfa acikken kontrol edilir. Arka planda bildirim gonderilmez. "
+        "Sayfayi kapat veya yenile oldugunda alarmlar sifirlanir.",
+        title="Bilgi:",
+    )
 
     if "alarms" not in st.session_state:
         st.session_state["alarms"] = []
@@ -117,7 +102,7 @@ def show_alarms():
             direction = st.selectbox("Yon", ["Uzerinde", "Altinda"])
 
         with c4:
-            st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
+            section_gap("lg")
             submitted = st.form_submit_button("Alarm Ekle", use_container_width=True)
 
         if submitted:
@@ -169,7 +154,7 @@ def show_alarms():
     df = pd.DataFrame(alarm_data_for_display)
 
     st.markdown(f"""
-    <div style="overflow-x:auto;border:1px solid {C['border']};
+    <div style="overflow-x:auto;border:1px solid {BORDER_SOFT};
                 border-radius:8px;background:{C['s1']};padding:0;">
     """, unsafe_allow_html=True)
 
@@ -203,7 +188,7 @@ def show_alarms():
         with cols[3]:
             st.text(row["Guncel"])
         with cols[4]:
-            status_color = C["green"] if row["Durum"] == "tetiklendi" else C["yellow"]
+            status_color = C["green"] if row["Durum"] == "tetiklendi" else C["muted"]
             st.markdown(f"<span style='color:{status_color}'>{row['Durum']}</span>", unsafe_allow_html=True)
         with cols[5]:
             st.text(row["Olustu"])

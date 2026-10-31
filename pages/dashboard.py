@@ -15,9 +15,10 @@ from utils.sentiment_utils import fetch_news, aggregate_sentiment
 from utils.model_utils import train_random_forest, evaluate_model, get_feature_importance
 from utils.pdf_report import generate_pdf_report
 from utils.chart_theme import (COLORS as C, FONT_FAMILY, PLOT_BG,
-    LINE_HAIR, LINE_THIN, LINE_REG, LINE_MAIN,
+    LINE_HAIR, LINE_THIN, LINE_REG, LINE_MAIN, BORDER_SOFT, BORDER_FAINT,
     TITLE_SIZE, AXIS_TITLE, TICK_SIZE, base_layout as pl, base_axis,
     bottom_legend, hover_style, rgba, area_fillgradient, modebar_config)
+from utils.ui import metric_card as _card, info_box, section_gap
 
 # ════════════════════════════════════════════════════════════════════════════
 def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
@@ -70,35 +71,35 @@ def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
     # ── Hero Kartı ────────────────────────────────────────────────────────────
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,{C['s1']},{C['s2']});
-                border:1px solid {C['border']};border-radius:16px;
-                padding:1.6rem 2rem;margin-bottom:1.2rem;
+                border:1px solid {BORDER_SOFT};border-radius:14px;
+                padding:var(--space-4) var(--space-5);margin-bottom:var(--space-4);
                 box-shadow:0 4px 32px rgba(0,0,0,0.5);">
       <div style="display:flex;justify-content:space-between;
-                  align-items:center;flex-wrap:wrap;gap:1rem;">
+                  align-items:center;flex-wrap:wrap;gap:var(--space-3);">
         <div>
-          <div style="font-family:'Space Mono',monospace;font-size:2rem;
+          <div style="font-family:'Space Mono',monospace;font-size:var(--fs-heading);
                       font-weight:800;background:linear-gradient(135deg,
                       {C['accent']},{C['purple']});
                       -webkit-background-clip:text;
                       -webkit-text-fill-color:transparent;">{symbol}</div>
-          <div style="color:{C['muted']};font-size:0.85rem;margin-top:3px;">
+          <div style="color:{C['muted']};font-size:var(--fs-body);margin-top:3px;">
             {info.get('name','')}
             {'&nbsp;·&nbsp;' + info.get('sector','') if info.get('sector','—') != '—' else ''}
           </div>
         </div>
         <div style="text-align:right;">
-          <div style="font-size:2.4rem;font-weight:800;
+          <div style="font-size:var(--fs-display);font-weight:800;
                       font-family:'Space Mono',monospace;color:{C['text']};">
             ${last:,.2f}
           </div>
           <div style="color:{chg_color};font-family:'Space Mono',monospace;
-                      font-weight:700;font-size:1.1rem;">
+                      font-weight:700;font-size:var(--fs-subheading);">
             {arrow} {abs(change):.2f}%
           </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-1);">
           <span class="status-badge {badge_cls}">{signal}</span>
-          <div style="color:{C['muted']};font-size:0.7rem;
+          <div style="color:{C['muted']};font-size:var(--fs-small);
                       font-family:'Space Mono',monospace;">
             Güven: {pred_prob*100:.0f}%
           </div>
@@ -114,8 +115,8 @@ def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
           format_market_cap(info.get("market_cap")),
           color=C["accent"])
     _card(c2, "📈 RSI (14)", f"{rsi_v:.1f}",
-          sub="🔴 Aşırı Alım" if rsi_v>70 else ("🟢 Aşırı Satım" if rsi_v<30 else "🟡 Normal"),
-          color=C["red"] if rsi_v>70 else (C["green"] if rsi_v<30 else C["yellow"]))
+          sub="🔴 Aşırı Alım" if rsi_v>70 else ("🟢 Aşırı Satım" if rsi_v<30 else "⚪ Normal"),
+          color=C["red"] if rsi_v>70 else (C["green"] if rsi_v<30 else C["muted"]))
     _card(c3, "⚡ MACD Hist", f"{macd_h:+.4f}",
           sub="🟢 Yükseliş" if macd_h>0 else "🔴 Düşüş",
           color=C["green"] if macd_h>0 else C["red"])
@@ -146,9 +147,9 @@ def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
     _card(c5, "📰 Haber Duygu", sent_agg["overall"],
           sub=f"✅{sent_agg['positive']}  ❌{sent_agg['negative']}",
           color=C["green"] if sent_agg["overall"]=="Pozitif"
-               else (C["red"] if sent_agg["overall"]=="Negatif" else C["yellow"]))
+               else (C["red"] if sent_agg["overall"]=="Negatif" else C["muted"]))
 
-    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    section_gap("sm")
 
     # ── Sekmeler ──────────────────────────────────────────────────────────────
     tab1,tab2,tab3,tab4 = st.tabs([
@@ -167,14 +168,14 @@ def show_dashboard(symbol, period, window_size, run_analysis, interval="1d"):
     with tab4:
         _corr_chart(df)
 
-    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    section_gap("sm")
     _pdf_export_button(symbol, info, df, last, change, rsi_v, macd_h,
                         pred_prob, signal, sent_agg, news, last_update)
 
     # Veri kaynagi bilgisi
     st.markdown(f"""
-    <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid {C['border']};
-                color:{C['muted']};font-size:0.75rem;font-family:'Space Mono',monospace;">
+    <div style="margin-top:var(--space-4);padding-top:var(--space-3);border-top:1px solid {BORDER_FAINT};
+                color:{C['muted']};font-size:var(--fs-small);font-family:'Space Mono',monospace;">
       Veri kaynagi: Yahoo Finance | Son guncelleme: {last_update.strftime('%Y-%m-%d %H:%M:%S')}
     </div>""", unsafe_allow_html=True)
 
@@ -184,8 +185,8 @@ def _disclaimer_note():
     note_col, link_col = st.columns([5, 1])
     with note_col:
         st.markdown(f"""
-        <div style="color:{C['muted']};font-size:0.75rem;
-                    font-family:'Space Mono',monospace;padding-top:0.4rem;">
+        <div style="color:{C['muted']};font-size:var(--fs-small);
+                    font-family:'Space Mono',monospace;padding-top:var(--space-2);">
           Bu platform egitim ve bilgilendirme amaclidir, yatirim tavsiyesi degildir.
         </div>""", unsafe_allow_html=True)
     with link_col:
@@ -218,8 +219,8 @@ def _live_price_section(symbol):
 
         if live_df is None or live_df.empty or len(live_df) < 2:
             st.markdown(f"""
-            <div style="color:{C['muted']};font-size:0.78rem;
-                        font-family:'Space Mono',monospace;padding:0.5rem 0;">
+            <div style="color:{C['muted']};font-size:var(--fs-small);
+                        font-family:'Space Mono',monospace;padding:var(--space-2) 0;">
               Canli veri alinamadi.
             </div>""", unsafe_allow_html=True)
             return
@@ -233,23 +234,24 @@ def _live_price_section(symbol):
         now_str     = datetime.now().strftime("%H:%M:%S")
 
         st.markdown(f"""
-        <div style="background:{C['s2']};border:1px solid {C['border']};
-                    border-radius:10px;padding:0.65rem 1.2rem;margin-bottom:0.8rem;
-                    display:flex;flex-wrap:wrap;gap:1.8rem;align-items:center;
+        <div style="background:{C['s2']};border:1px solid {BORDER_SOFT};
+                    border-radius:8px;padding:var(--space-2) var(--space-4);
+                    margin-bottom:var(--space-3);
+                    display:flex;flex-wrap:wrap;gap:var(--space-4);align-items:center;
                     font-family:'Space Mono',monospace;">
-          <div style="color:{C['text']};font-size:1rem;font-weight:700;">
+          <div style="color:{C['text']};font-size:var(--fs-subheading);font-weight:700;">
             ${live_last:,.2f}
-            <span style="color:{chg_color};font-size:0.82rem;font-weight:700;">
+            <span style="color:{chg_color};font-size:var(--fs-body);font-weight:700;">
               {'+' if live_change >= 0 else ''}{live_change:.2f}%
             </span>
           </div>
-          <div style="color:{C['muted']};font-size:0.78rem;">
+          <div style="color:{C['muted']};font-size:var(--fs-small);">
             RSI <span style="color:{C['text']};">{live_rsi:.1f}</span>
           </div>
-          <div style="color:{C['muted']};font-size:0.78rem;">
+          <div style="color:{C['muted']};font-size:var(--fs-small);">
             MACD Hist <span style="color:{C['text']};">{live_macd:+.4f}</span>
           </div>
-          <div style="color:{C['muted']};font-size:0.72rem;margin-left:auto;">
+          <div style="color:{C['muted']};font-size:var(--fs-small);margin-left:auto;">
             Son guncelleme: {now_str}
           </div>
         </div>""", unsafe_allow_html=True)
@@ -277,23 +279,6 @@ def _pdf_export_button(symbol, info, df, last, change, rsi_v, macd_h,
         st.warning("PDF rapor olusturulamadi. Lutfen tekrar deneyin.")
 
 
-# ── Kart helper ───────────────────────────────────────────────────────────────
-def _card(col, label, value, sub="", color=None):
-    color = color or C["accent"]
-    with col:
-        st.markdown(f"""
-        <div style="background:{C['s2']};border:1px solid {C['border']};
-                    border-left:3px solid {color};border-radius:10px;
-                    padding:0.85rem 1rem;margin-bottom:0.5rem;">
-          <div style="color:{C['muted']};font-size:0.7rem;
-                      font-family:'Space Mono',monospace;
-                      letter-spacing:1px;text-transform:uppercase;">{label}</div>
-          <div style="color:{C['text']};font-size:1.35rem;font-weight:700;
-                      font-family:'Space Mono',monospace;margin:4px 0;">{value}</div>
-          <div style="color:{color};font-size:0.74rem;">{sub}</div>
-        </div>""", unsafe_allow_html=True)
-
-
 # ── Fiyat Grafiği ─────────────────────────────────────────────────────────────
 def _price_chart(df, symbol):
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True,
@@ -309,7 +294,7 @@ def _price_chart(df, symbol):
     ), row=1, col=1)
 
     for ma, col, w in [("MA20", C["accent"], LINE_MAIN),
-                        ("MA50", C["yellow"], LINE_THIN),
+                        ("MA50", C["muted"], LINE_THIN),
                         ("MA10", C["purple"], LINE_HAIR)]:
         fig.add_trace(go.Scatter(x=df.index, y=df[ma], name=ma,
             line=dict(color=col, width=w),
@@ -396,7 +381,7 @@ def _indicator_charts(df):
             line=dict(color=C["accent"], width=LINE_REG), name="MACD",
             hovertemplate="MACD: %{y:.4f}<extra></extra>"))
         fig.add_trace(go.Scatter(x=df.index, y=df["MACD_Signal"],
-            line=dict(color=C["yellow"], width=LINE_THIN), name="Sinyal",
+            line=dict(color=C["purple"], width=LINE_THIN), name="Sinyal",
             hovertemplate="Sinyal: %{y:.4f}<extra></extra>"))
         fig.update_layout(**pl("<b>MACD</b>", height=320,
                                 margin=dict(l=42, r=20, t=52, b=78),
@@ -445,7 +430,7 @@ def _model_analysis(df):
             x=vals, y=names, orientation="h",
             marker=dict(
                 color=vals,
-                colorscale=[[0, C["purple"]], [0.5, C["accent"]], [1, C["green"]]],
+                colorscale=[[0, C["muted"]], [0.55, C["purple"]], [1, C["accent"]]],
                 showscale=True,
                 line_width=0,
                 colorbar=dict(title=dict(text="Önem", font=dict(color=C["muted"], size=AXIS_TITLE)),
@@ -496,7 +481,7 @@ def _model_analysis(df):
     labels = ["AŞAĞI (0)", "YUKARI (1)"]
     fig = go.Figure(go.Heatmap(
         z=cm, x=labels, y=labels,
-        colorscale=[[0, C["s1"]], [0.5, "#312e81"], [1, C["accent"]]],
+        colorscale=[[0, C["s1"]], [0.5, C["purple"]], [1, C["accent"]]],
         text=[[str(v) for v in row] for row in cm],
         texttemplate="<b>%{text}</b>",
         textfont=dict(size=22, color="white"),
@@ -525,15 +510,15 @@ def _model_analysis(df):
 
     # ── Sınıflandırma Raporu tablosu ──────────────────────────────────────────
     st.markdown(f"""
-    <div style="background:{C['s2']};border:1px solid {C['border']};
-                border-radius:10px;padding:1.1rem 1.5rem;margin-top:4px;">
-      <div style="color:{C['accent']};font-size:0.7rem;letter-spacing:2px;
-                  text-transform:uppercase;margin-bottom:0.8rem;">
+    <div style="background:{C['s2']};border:1px solid {BORDER_SOFT};
+                border-radius:10px;padding:var(--space-3) var(--space-4);margin-top:4px;">
+      <div style="color:{C['accent']};font-size:var(--fs-small);letter-spacing:2px;
+                  text-transform:uppercase;margin-bottom:var(--space-2);">
         Sınıflandırma Raporu
       </div>
       <table style="width:100%;border-collapse:collapse;
-                    font-family:'Space Mono',monospace;font-size:0.82rem;">
-        <tr style="color:{C['muted']};border-bottom:1px solid {C['border']};">
+                    font-family:'Space Mono',monospace;font-size:var(--fs-body);">
+        <tr style="color:{C['muted']};border-bottom:1px solid {BORDER_FAINT};">
           <td style="padding:6px 0">Sınıf</td>
           <td style="padding:6px">Precision</td>
           <td style="padding:6px">Recall</td>
@@ -554,7 +539,7 @@ def _model_analysis(df):
           <td style="padding:6px">{rep['1']['f1-score']:.3f}</td>
           <td style="padding:6px">{int(rep['1']['support'])}</td>
         </tr>
-        <tr style="color:{C['accent']};border-top:1px solid {C['border']};">
+        <tr style="color:{C['accent']};border-top:1px solid {BORDER_FAINT};">
           <td style="padding:6px 0">Genel Doğruluk</td>
           <td style="padding:6px"></td><td></td>
           <td style="padding:6px"><b>{acc:.1f}%</b></td>
@@ -570,7 +555,7 @@ def _news_section(news, agg):
     _card(c1,"📊 Ort. Skor",  f"{agg['avg_score']:+.2f}")
     _card(c2,"✅ Pozitif",    str(agg["positive"]), color=C["green"])
     _card(c3,"❌ Negatif",    str(agg["negative"]), color=C["red"])
-    _card(c4,"➖ Nötr",       str(agg["neutral"]),  color=C["yellow"])
+    _card(c4,"➖ Nötr",       str(agg["neutral"]),  color=C["muted"])
 
     # Gauge
     fig = go.Figure(go.Indicator(
@@ -588,7 +573,7 @@ def _news_section(news, agg):
             "borderwidth": 1, "bordercolor": rgba(C["muted"], 0.28),
             "steps": [
                 {"range": [-100, -10], "color": rgba(C["red"], 0.12)},
-                {"range": [-10, 10],   "color": rgba(C["yellow"], 0.07)},
+                {"range": [-10, 10],   "color": rgba(C["muted"], 0.10)},
                 {"range": [10, 100],   "color": rgba(C["green"], 0.12)},
             ],
         }
@@ -600,27 +585,28 @@ def _news_section(news, agg):
 
     for n in news:
         lbl   = n["sentiment"]["label"]
-        clr   = {"Pozitif":C["green"],"Negatif":C["red"],"Nötr":C["yellow"]}[lbl]
+        clr   = {"Pozitif":C["green"],"Negatif":C["red"],"Nötr":C["muted"]}[lbl]
         score = n["sentiment"]["score"]
         st.markdown(f"""
-        <div style="background:{C['s2']};border:1px solid {C['border']};
-                    border-left:3px solid {clr};border-radius:10px;
-                    padding:0.85rem 1.2rem;margin-bottom:0.55rem;">
+        <div style="background:{C['s2']};border:1px solid {BORDER_SOFT};
+                    border-left:2px solid {clr};border-radius:8px;
+                    padding:var(--space-3) var(--space-4);margin-bottom:var(--space-2);">
           <div style="display:flex;justify-content:space-between;
-                      align-items:flex-start;gap:1rem;">
+                      align-items:flex-start;gap:var(--space-3);">
             <div style="flex:1;">
-              <div style="font-weight:600;margin-bottom:4px;color:{C['text']};">
+              <div style="font-weight:600;margin-bottom:4px;color:{C['text']};
+                          font-size:var(--fs-body);">
                 {n['title']}
               </div>
-              <div style="color:{C['muted']};font-size:0.75rem;
+              <div style="color:{C['muted']};font-size:var(--fs-small);
                           font-family:'Space Mono',monospace;">
                 {n['source']} &nbsp;·&nbsp; {n['published']}
               </div>
             </div>
             <div style="text-align:center;min-width:72px;">
-              <div style="color:{clr};font-weight:700;
+              <div style="color:{clr};font-weight:700;font-size:var(--fs-body);
                           font-family:'Space Mono',monospace;">{lbl}</div>
-              <div style="color:{clr};font-size:0.78rem;
+              <div style="color:{clr};font-size:var(--fs-small);
                           font-family:'Space Mono',monospace;">{score:+.2f}</div>
             </div>
           </div>
@@ -678,13 +664,13 @@ def _corr_chart(df):
             for a,b,v in high[:6]
         )
         st.markdown(f"""
-        <div style="background:{C['s2']};border:1px solid {C['border']};
-                    border-radius:10px;padding:1rem 1.2rem;margin-top:6px;">
-          <div style="color:{C['accent']};font-size:0.7rem;letter-spacing:2px;
-                      text-transform:uppercase;margin-bottom:0.6rem;">
+        <div style="background:{C['s2']};border:1px solid {BORDER_SOFT};
+                    border-radius:10px;padding:var(--space-3) var(--space-4);margin-top:6px;">
+          <div style="color:{C['accent']};font-size:var(--fs-small);letter-spacing:2px;
+                      text-transform:uppercase;margin-bottom:var(--space-2);">
             Yüksek Korelasyonlar (|r| &gt; 0.70)
           </div>
-          <table style="font-family:'Space Mono',monospace;font-size:0.8rem;">
+          <table style="font-family:'Space Mono',monospace;font-size:var(--fs-body);">
             {rows}
           </table>
         </div>""", unsafe_allow_html=True)
@@ -706,26 +692,33 @@ def _welcome():
              ("📰","Haber\nDuygu NLP"),("🌍","BIST + ABD\nPiyasaları"),
              ("📈","Backtest\nSimülasyon")]
     cards = "".join(
-        f'<div style="background:{C["s2"]};border:1px solid {C["border"]};'
-        f'border-radius:12px;padding:1.1rem 1.4rem;min-width:110px;">'
-        f'<div style="font-size:1.8rem;">{ic}</div>'
-        f'<div style="font-family:Space Mono,monospace;font-size:0.72rem;'
-        f'margin-top:0.5rem;color:{C["muted"]};white-space:pre-line;">{tx}</div>'
+        f'<div class="welcome-feature-card">'
+        f'<div class="welcome-feature-icon">{ic}</div>'
+        f'<div class="welcome-feature-label">{tx}</div>'
         f'</div>' for ic,tx in items
     )
     st.markdown(f"""
-    <div style="text-align:center;padding:3rem 1rem;">
-      <div style="font-size:3.5rem;margin-bottom:1rem;">📈</div>
-      <h2 style="font-family:'Space Mono',monospace;
-                 background:linear-gradient(135deg,{C['accent']},{C['purple']});
-                 -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-                 font-size:2rem;">StockAI Pro</h2>
-      <p style="color:{C['muted']};max-width:480px;margin:0.8rem auto 2rem;
-                line-height:1.8;font-size:0.95rem;">
-        Sol panelden bir <b style="color:{C['accent']}">hisse senedi</b> seçin
-        ve <b style="color:{C['accent']}">ANALİZİ BAŞLAT</b> butonuna tıklayın.
-      </p>
-      <div style="display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;">
-        {cards}
+    <div class="welcome-hero">
+      <div class="welcome-glow"></div>
+      <div class="welcome-content">
+        <div style="font-size:3.4rem;margin-bottom:0.9rem;">📈</div>
+        <h2 style="font-family:'Space Mono',monospace;
+                   background:linear-gradient(135deg,{C['accent']},{C['purple']});
+                   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                   font-size:2.1rem;margin-bottom:0.7rem;">StockAI Pro</h2>
+        <p style="color:{C['text']};max-width:580px;margin:0 auto;
+                  line-height:1.75;font-size:1.05rem;font-weight:600;">
+          Yapay zeka destekli tahmin modelleri, şeffaf performans metrikleri ve
+          ABD, BIST ve kripto piyasalarını tek ekranda buluşturan analiz platformu.
+        </p>
+        <p style="color:{C['muted']};max-width:480px;margin:0.9rem auto 2.2rem;
+                  line-height:1.8;font-size:0.92rem;">
+          Sol panelden bir <b style="color:{C['accent']}">hisse senedi</b> seçin
+          ve <b style="color:{C['accent']}">ANALİZİ BAŞLAT</b> butonuna tıklayın.
+        </p>
+        <div class="welcome-divider"></div>
+        <div class="welcome-cards">
+          {cards}
+        </div>
       </div>
     </div>""", unsafe_allow_html=True)

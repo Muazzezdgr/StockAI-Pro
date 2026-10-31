@@ -35,6 +35,27 @@ st.markdown("""
     --muted: #64748b;
     --font-main: 'Syne', sans-serif;
     --font-mono: 'Space Mono', monospace;
+
+    /* Spacing scale - 8px base unit. Use these everywhere instead of ad hoc rem/px values. */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 16px;
+    --space-4: 24px;
+    --space-5: 32px;
+
+    /* Typography hierarchy - 4 levels. --fs-display is a documented exception
+       reserved for the single primary price/quote number (Bloomberg/TradingView
+       convention of an oversized ticker price larger than any heading). */
+    --fs-heading: 24px;
+    --fs-subheading: 16px;
+    --fs-body: 14px;
+    --fs-small: 11px;
+    --fs-display: 32px;
+
+    /* Low-contrast neutral border tones - same hue as --border, reduced opacity,
+       for card outlines and dividers so they read as structure, not noise. */
+    --border-soft: rgba(30,45,69,0.55);
+    --border-faint: rgba(30,45,69,0.32);
 }
 
 html, body, [data-testid="stAppViewContainer"] {
@@ -45,7 +66,7 @@ html, body, [data-testid="stAppViewContainer"] {
 
 [data-testid="stSidebar"] {
     background: var(--surface) !important;
-    border-right: 1px solid var(--border) !important;
+    border-right: 1px solid var(--border-soft) !important;
 }
 
 .stButton > button {
@@ -73,10 +94,10 @@ html, body, [data-testid="stAppViewContainer"] {
 
 .metric-card {
     background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.2rem 1.5rem;
-    margin-bottom: 1rem;
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-3);
     position: relative;
     overflow: hidden;
 }
@@ -84,19 +105,19 @@ html, body, [data-testid="stAppViewContainer"] {
     content: '';
     position: absolute;
     top: 0; left: 0;
-    width: 3px; height: 100%;
+    width: 2px; height: 100%;
     background: linear-gradient(180deg, var(--accent), var(--accent2));
 }
 
 .section-title {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--fs-small);
     letter-spacing: 3px;
     text-transform: uppercase;
     color: var(--accent);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--border-faint);
 }
 
 .signal-up {
@@ -112,17 +133,17 @@ html, body, [data-testid="stAppViewContainer"] {
 
 .news-card {
     background: var(--surface2);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-soft);
     border-radius: 10px;
-    padding: 1rem 1.2rem;
-    margin-bottom: 0.75rem;
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-2);
     transition: border-color 0.2s;
 }
 .news-card:hover { border-color: var(--accent); }
 
-.positive-sentiment { border-left: 3px solid var(--green); }
-.negative-sentiment { border-left: 3px solid var(--red); }
-.neutral-sentiment  { border-left: 3px solid var(--yellow); }
+.positive-sentiment { border-left: 2px solid var(--green); }
+.negative-sentiment { border-left: 2px solid var(--red); }
+.neutral-sentiment  { border-left: 2px solid var(--muted); }
 
 .progress-bar {
     height: 6px;
@@ -163,13 +184,13 @@ html, body, [data-testid="stAppViewContainer"] {
 
 div[data-testid="stExpander"] {
     background: var(--surface2);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-soft);
     border-radius: 10px;
 }
 
 .stTabs [data-baseweb="tab-list"] {
     background: var(--surface) !important;
-    border-bottom: 1px solid var(--border) !important;
+    border-bottom: 1px solid var(--border-faint) !important;
 }
 .stTabs [data-baseweb="tab"] {
     font-family: var(--font-mono) !important;
@@ -196,6 +217,59 @@ div[data-testid="stExpander"] {
 .badge-buy  { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid var(--green); }
 .badge-sell { background: rgba(239,68,68,0.15);  color: var(--red);   border: 1px solid var(--red);   }
 .badge-hold { background: rgba(245,158,11,0.15); color: var(--yellow);border: 1px solid var(--yellow);}
+
+.welcome-hero {
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    padding: var(--space-5) var(--space-4);
+    margin-top: var(--space-2);
+    background: linear-gradient(160deg, var(--surface), var(--surface2));
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    box-shadow: 0 4px 40px rgba(0,0,0,0.45);
+}
+.welcome-glow {
+    position: absolute;
+    top: -42%; left: 50%;
+    width: 640px; height: 640px;
+    transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(0,212,255,0.11) 0%, rgba(124,58,237,0.07) 45%, transparent 72%);
+    pointer-events: none;
+}
+.welcome-content { position: relative; z-index: 1; }
+.welcome-divider {
+    width: 64px; height: 2px; margin: 0 auto;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    opacity: 0.6;
+}
+.welcome-cards {
+    display: flex; justify-content: center; flex-wrap: wrap;
+    gap: var(--space-3); margin-top: var(--space-4);
+}
+.welcome-feature-card {
+    background: var(--surface2);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: var(--space-3) var(--space-4);
+    min-width: 130px;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.welcome-feature-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent);
+    box-shadow: 0 10px 28px rgba(0,212,255,0.18);
+}
+.welcome-feature-icon { font-size: 2.3rem; line-height: 1; }
+.welcome-feature-label {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    margin-top: var(--space-2);
+    color: var(--muted);
+    white-space: pre-line;
+    line-height: 1.4;
+}
 </style>
 """, unsafe_allow_html=True)
 

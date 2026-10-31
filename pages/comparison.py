@@ -6,8 +6,9 @@ import plotly.graph_objects as go
 
 from utils.data_utils import fetch_stock_data, get_ticker_info, prepare_rf_data
 from utils.model_utils import train_random_forest
-from utils.chart_theme import (COLORS as C, LINE_REG, base_layout as pl,
-    modebar_config)
+from utils.chart_theme import (COLORS as C, LINE_REG, BORDER_SOFT, BORDER_FAINT,
+    base_layout as pl, modebar_config)
+from utils.ui import metric_card as _card, info_box, section_gap
 
 US_SYMBOLS = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "NFLX"]
 BIST_SYMBOLS = ["THYAO.IS", "GARAN.IS", "AKBNK.IS", "ASELS.IS", "KCHOL.IS", "EREGL.IS", "BIMAS.IS",
@@ -22,22 +23,6 @@ MARKETS = {
     "BIST (Turkiye)": BIST_SYMBOLS,
     "Kripto Para": CRYPTO_SYMBOLS,
 }
-
-
-def _card(col, label, value, sub="", color=None):
-    color = color or C["accent"]
-    with col:
-        st.markdown(f"""
-        <div style="background:{C['s2']};border:1px solid {C['border']};
-                    border-left:3px solid {color};border-radius:10px;
-                    padding:0.85rem 1rem;margin-bottom:0.5rem;">
-          <div style="color:{C['muted']};font-size:0.7rem;
-                      font-family:'Space Mono',monospace;
-                      letter-spacing:1px;text-transform:uppercase;">{label}</div>
-          <div style="color:{C['text']};font-size:1.35rem;font-weight:700;
-                      font-family:'Space Mono',monospace;margin:4px 0;">{value}</div>
-          <div style="color:{color};font-size:0.74rem;">{sub}</div>
-        </div>""", unsafe_allow_html=True)
 
 
 def _fmt_price(value, currency):
@@ -58,9 +43,9 @@ def _quick_predict(df):
 
 
 def _symbol_picker(label_suffix, default_market, default_symbol):
-    st.markdown(f'<p style="color:{C["muted"]};font-size:0.75rem;'
+    st.markdown(f'<p style="color:{C["muted"]};font-size:var(--fs-small);'
                 f'font-family:Space Mono,monospace;letter-spacing:1px;'
-                f'text-transform:uppercase;margin-bottom:0.3rem;">Varlik {label_suffix}</p>',
+                f'text-transform:uppercase;margin-bottom:var(--space-1);">Varlik {label_suffix}</p>',
                 unsafe_allow_html=True)
     market_keys = list(MARKETS.keys())
     market = st.selectbox(f"Piyasa {label_suffix}", market_keys,
@@ -148,18 +133,18 @@ def _row(label, va, vb, fmt="{:.2f}", highlight=None):
     elif highlight is False:
         ca = C["green"] if va < vb else (C["red"] if va > vb else C["text"])
         cb = C["green"] if vb < va else (C["red"] if vb > va else C["text"])
-    return f"""<tr style="border-bottom:1px solid {C['border']};">
-      <td style="padding:8px 6px;color:{C['muted']};">{label}</td>
-      <td style="padding:8px 6px;color:{ca};font-family:'Space Mono',monospace;">{fmt.format(va)}</td>
-      <td style="padding:8px 6px;color:{cb};font-family:'Space Mono',monospace;">{fmt.format(vb)}</td>
+    return f"""<tr style="border-bottom:1px solid {BORDER_FAINT};">
+      <td style="padding:8px 6px;color:{C['muted']};font-size:var(--fs-body);">{label}</td>
+      <td style="padding:8px 6px;color:{ca};font-family:'Space Mono',monospace;font-size:var(--fs-body);">{fmt.format(va)}</td>
+      <td style="padding:8px 6px;color:{cb};font-family:'Space Mono',monospace;font-size:var(--fs-body);">{fmt.format(vb)}</td>
     </tr>"""
 
 
 def show_comparison(period, interval):
     st.markdown('<p class="section-title">// KARSILASTIRMALI ANALIZ</p>', unsafe_allow_html=True)
     st.markdown(f"""
-    <div style="color:{C['muted']};font-size:0.75rem;
-                font-family:'Space Mono',monospace;padding-bottom:0.6rem;">
+    <div style="color:{C['muted']};font-size:var(--fs-small);
+                font-family:'Space Mono',monospace;padding-bottom:var(--space-2);">
       Iki farkli sembolu (hisse, kripto veya BIST) ayni donem uzerinden karsilastirin.
       Bu sayfa egitim ve bilgilendirme amaclidir, yatirim tavsiyesi degildir.
     </div>""", unsafe_allow_html=True)
@@ -174,13 +159,13 @@ def show_comparison(period, interval):
 
     if not run:
         st.markdown(f"""
-        <div style="text-align:center;padding:2.5rem 1rem;">
+        <div style="text-align:center;padding:var(--space-5) var(--space-3);">
           <div style="font-family:'Space Mono',monospace;
                      background:linear-gradient(135deg,{C['accent']},{C['purple']});
                      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-                     font-size:1.6rem;font-weight:700;">Karsilastirmali Analiz</div>
-          <p style="color:{C['muted']};max-width:480px;margin:0.8rem auto 0;
-                    line-height:1.8;font-size:0.92rem;">
+                     font-size:var(--fs-heading);font-weight:700;">Karsilastirmali Analiz</div>
+          <p style="color:{C['muted']};max-width:480px;margin:var(--space-3) auto 0;
+                    line-height:1.8;font-size:var(--fs-body);">
             Yukaridan iki varlik secip <b style="color:{C['accent']}">KARSILASTIR</b>
             butonuna tiklayin. Farkli fiyat araliklarindaki varliklar yuzde
             degisim uzerinden ayni grafikte karsilastirilir.
@@ -218,7 +203,7 @@ def show_comparison(period, interval):
     _card(c4, f"{b['symbol']} Donem Getirisi", f"{b['period_return']:+.2f}%",
           color=C["green"] if b["period_return"] >= 0 else C["red"])
 
-    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    section_gap("sm")
 
     # -- Normalize yuzde degisim grafigi ---------------------------------------
     fig = go.Figure()
@@ -245,44 +230,44 @@ def show_comparison(period, interval):
     ])
 
     st.markdown(f"""
-    <div style="background:{C['s2']};border:1px solid {C['border']};
-                border-radius:10px;padding:1.1rem 1.5rem;margin-top:4px;">
-      <div style="color:{C['accent']};font-size:0.7rem;letter-spacing:2px;
-                  text-transform:uppercase;margin-bottom:0.8rem;">
+    <div style="background:{C['s2']};border:1px solid {BORDER_SOFT};
+                border-radius:10px;padding:var(--space-3) var(--space-4);margin-top:4px;">
+      <div style="color:{C['accent']};font-size:var(--fs-small);letter-spacing:2px;
+                  text-transform:uppercase;margin-bottom:var(--space-2);">
         Metrik Karsilastirmasi
       </div>
-      <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
-        <tr style="color:{C['muted']};border-bottom:1px solid {C['border']};">
-          <td style="padding:6px;font-family:'Space Mono',monospace;font-size:0.72rem;
+      <table style="width:100%;border-collapse:collapse;font-size:var(--fs-body);">
+        <tr style="color:{C['muted']};border-bottom:1px solid {BORDER_FAINT};">
+          <td style="padding:6px;font-family:'Space Mono',monospace;font-size:var(--fs-small);
                      text-transform:uppercase;letter-spacing:1px;">Metrik</td>
           <td style="padding:6px;color:{C['accent']};font-family:'Space Mono',monospace;
-                     font-size:0.78rem;">{a['symbol']}</td>
+                     font-size:var(--fs-small);">{a['symbol']}</td>
           <td style="padding:6px;color:{C['purple']};font-family:'Space Mono',monospace;
-                     font-size:0.78rem;">{b['symbol']}</td>
+                     font-size:var(--fs-small);">{b['symbol']}</td>
         </tr>
         {rows}
       </table>
     </div>""", unsafe_allow_html=True)
 
-    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+    section_gap("md")
 
     # -- Otomatik ozet ----------------------------------------------------------
     summary = _generate_summary(a, b)
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,{C['s1']},{C['s2']});
-                border:1px solid {C['border']};border-left:3px solid {C['accent']};
-                border-radius:10px;padding:1.1rem 1.4rem;margin-bottom:1rem;">
-      <div style="color:{C['accent']};font-size:0.7rem;letter-spacing:2px;
-                  text-transform:uppercase;margin-bottom:0.6rem;">
+                border:1px solid {BORDER_SOFT};border-left:2px solid {C['accent']};
+                border-radius:10px;padding:var(--space-3) var(--space-4);margin-bottom:var(--space-3);">
+      <div style="color:{C['accent']};font-size:var(--fs-small);letter-spacing:2px;
+                  text-transform:uppercase;margin-bottom:var(--space-2);">
         Otomatik Ozet
       </div>
-      <div style="color:{C['text']};font-size:0.92rem;line-height:1.7;">
+      <div style="color:{C['text']};font-size:var(--fs-body);line-height:1.7;">
         {summary}
       </div>
     </div>""", unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid {C['border']};
-                color:{C['muted']};font-size:0.75rem;font-family:'Space Mono',monospace;">
+    <div style="margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid {BORDER_FAINT};
+                color:{C['muted']};font-size:var(--fs-small);font-family:'Space Mono',monospace;">
       Veri kaynagi: Yahoo Finance. Bu sayfadaki bilgiler yatirim tavsiyesi degildir.
     </div>""", unsafe_allow_html=True)
