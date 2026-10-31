@@ -1,100 +1,132 @@
-# StockAI Pro
+# 📈 StockAI Pro — Stock, Crypto & BIST Analysis Platform
 
-StockAI Pro, hisse senedi, kripto para ve BIST piyasalarını yapay zeka
-modelleriyle analiz eden bir karar destek platformudur. LSTM ve Random
-Forest tabanlı modellerle fiyat yönü tahmini yapar, haber duygu analizini
-teknik göstergelerle birleştirir ve tüm tahminlerin arkasındaki güven
-düzeyini şeffaf biçimde gösterir.
+[![Tests](https://github.com/Muazzezdgr/StockAI-Pro/actions/workflows/tests.yml/badge.svg)](https://github.com/Muazzezdgr/StockAI-Pro/actions/workflows/tests.yml)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://stockai-pro.streamlit.app)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white)
+![pytest](https://img.shields.io/badge/tested%20with-pytest-0A9EDC?logo=pytest&logoColor=white)
 
-Streamlit üzerine kurulmuş olan uygulama, tek bir dosyayı çalıştırarak
-tarayıcıda açılan interaktif bir dashboard sunar; kurulum veya sunucu
-yönetimi gerektirmez.
+An interactive decision-support dashboard for **US stocks, BIST 30 and major cryptocurrencies**. It combines 21 technical indicators with machine-learning direction forecasts (Random Forest / Gradient Boosting), backtesting, portfolio tracking and price alarms. It is built around one principle: **show the user how much to trust each number.**
 
-## Özellikler
+🔗 **Live demo:** [stockai-pro.streamlit.app](https://stockai-pro.streamlit.app)
 
-- **Çoklu piyasa desteği**: ABD hisseleri (NASDAQ/NYSE), BIST 30 şirketi ve
-  başlıca kripto paralar (BTC, ETH, BNB, SOL ve diğerleri) tek arayüzden
-  analiz edilir
-- **AI destekli yön tahmini**: LSTM ve Random Forest modelleriyle fiyat
-  yönü ve güven skoru üretilir
-- **Haber duygu analizi**: İlgili sembole ait haberler NLP ile taranır ve
-  pozitif/negatif/nötr olarak sınıflandırılır
-- **Portföy takibi**: Sahip olunan varlıkları kaydedip güncel değer ve
-  kâr/zarar durumunu anlık izleme
-- **Fiyat alarmları**: Belirlenen seviyelere ulaşıldığında bildirim alma
-- **Karşılaştırmalı analiz**: İki sembolü yan yana; fiyat, teknik gösterge
-  ve model güveni açısından kıyaslama
-- **PDF rapor dışa aktarma**: Analiz sonuçlarını paylaşılabilir bir rapora
-  dönüştürme
-- **Backtest simülasyonu**: Model stratejisini geçmiş veri üzerinde
-  Buy & Hold ile karşılaştırma
-- **Teknik gösterge kütüphanesi**: RSI, MACD ve benzeri 20'den fazla
-  gösterge ile zenginleştirilmiş analiz
+> 🧪 **QA focus:** 62 automated tests run on every push with GitHub Actions, without internet access, using synthetic price data. Testing uncovered **10 bugs**, including ML data leakage, a one-day misalignment in the backtest, and example news shown as real news. All are documented in the **[Bug Report](docs/BUG_REPORT.md)** and fixed.
 
-## Neden Farklı
+<!-- Ekran görüntüsü: canlı uygulamadan alıp docs/screenshots/dashboard.png olarak ekleyin -->
+<!-- ![Dashboard](docs/screenshots/dashboard.png) -->
 
-**Şeffaflık önce gelir.** Model güven skoru kara kutu bir sayı değildir;
-nasıl hesaplandığı ve neyi ifade ettiği kullanıcıya açıkça anlatılır.
-Backtest sonuçları da az sayıda işlem üretildiğinde istatistiksel olarak
-anlamlı olmayabileceği konusunda kullanıcıyı uyarır — sonuçlar abartılı bir
-güvenle sunulmaz.
+---
 
-**Yerel piyasa desteği.** BIST 30 şirketleri uygulamaya özel olarak
-tanımlanmıştır; Türkiye piyasasıyla ilgilenen kullanıcılar için ayrı bir
-entegrasyon aranmasına gerek kalmaz.
+## ✨ Features
 
-**Açık geliştirme süreci.** Proje, geri bildirimlerle adım adım
-şekillenen, geliştirmeye açık bir kaynak koddur.
+| | |
+|---|---|
+| 🌍 **Multi-market** | NASDAQ/NYSE stocks, 30 BIST companies, 8 major cryptocurrencies; daily or hourly data |
+| 🤖 **Direction forecast** | Random Forest / Gradient Boosting predict whether the next close will be higher, with a confidence score and feature importance |
+| 📊 **21 technical indicators** | RSI, MACD, Bollinger Bands, Stochastic, ATR, OBV, moving averages, momentum, volatility… |
+| 🚦 **Buy / Hold / Sell signal** | Rule-based score that combines RSI, MACD, Bollinger position and model confidence |
+| 📈 **Backtest** | Strategy vs. Buy & Hold with stop-loss, win rate, max drawdown, annualized return and Sharpe ratio |
+| 📰 **News sentiment** | NewsAPI headlines scored with a finance keyword lexicon (English + Turkish) |
+| ⚖️ **Comparison** | Two symbols side by side |
+| 💼 **Portfolio & alarms** | Track holdings and set price alerts |
+| 📄 **PDF report** | Export the analysis as a shareable report |
 
-## Kurulum
+### Transparency by design
+- The **model confidence** explanation shows how the score is calculated and what it does *not* mean.
+- The backtest warns when too few trades were made for the result to be statistically meaningful.
+- Without a NewsAPI key, the app shows **clearly labeled example headlines** and never presents them as real news.
+- The LSTM model is offered **only when TensorFlow is installed**. The cloud demo runs Random Forest and Gradient Boosting, and the interface says so.
 
-### Tek tıkla çalıştırma (Windows)
+---
 
-1. Proje klasörünü bilgisayarınıza indirin
-2. `CALISTIR.bat` dosyasına çift tıklayın
-3. Tarayıcı otomatik olarak `http://localhost:8501` adresinde açılır
+## 🏗️ Project Structure
 
-Python kurulu değilse [python.org](https://www.python.org/downloads/)
-adresinden indirin ve kurulum sırasında **"Add to PATH"** seçeneğini
-işaretleyin.
+```
+app.py                  Entry point: sidebar navigation, symbol selection
+pages/                  One module per screen (dashboard, model_training, backtest, …)
+utils/
+├── data_utils.py       Data download (yfinance), 21 indicators, train/test preparation
+├── model_utils.py      RF / GB training, evaluation, next-day prediction, optional LSTM
+├── backtest_utils.py   Backtest simulation and metrics (pure functions, fully tested)
+├── sentiment_utils.py  NewsAPI client + lexicon-based sentiment
+├── pdf_report.py       PDF export (fpdf2)
+└── chart_theme.py, ui.py   Shared chart style and UI components
+tests/                  pytest suite (unit + Streamlit AppTest)
+docs/
+├── BUG_REPORT.md       Test findings: reproduction steps, root cause, fix
+└── course-project/     Original course deliverables (notebook, report, slides)
+```
 
-### Manuel kurulum
+---
+
+## 🧪 Testing
 
 ```bash
-# Gerekli kütüphaneleri kur
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
+pytest
+```
 
-# Uygulamayı başlat
+| Area | What is verified |
+|---|---|
+| **Indicators** | All 21 features present, no NaN, RSI always 0–100, RSI → 100 / 0 for strictly rising / falling prices |
+| **Boundary values** | Buy/sell signal at exactly the 2.5 threshold, market-cap formatting at 1M / 1B / 1T |
+| **ML data integrity** | Scaler is fitted on training data only (no leakage); chronological split; next-day prediction uses the latest day |
+| **Backtest** | Buy/sell rules, stop-loss, open position at period end, max drawdown, annualization, prediction ↔ price alignment |
+| **Sentiment** | Whole-word matching, no double counting, Turkish word stems |
+| **App smoke (Streamlit AppTest)** | All 8 pages render without exceptions; demo-news warning is shown; LSTM hidden without TensorFlow |
+
+**Sanity check:** on a synthetic random-walk series the model scores ~51%. That is the expected result for unpredictable data, and a much higher score would indicate leakage.
+
+---
+
+## 🚀 Getting Started
+
+**Windows (one click):** double-click `CALISTIR.bat`. The browser opens at `http://localhost:8501`.
+
+**Manual:**
+```bash
+git clone https://github.com/Muazzezdgr/StockAI-Pro.git
+cd StockAI-Pro
+pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Uygulama açıldıktan sonra `http://localhost:8501` adresinden erişilebilir.
+**Optional:**
+- **Real news:** get a free key at [newsapi.org](https://newsapi.org) and set `NEWSAPI_KEY` as an environment variable, or add it to `.streamlit/secrets.toml` (ignored by git).
+- **LSTM:** `pip install tensorflow` locally; the LSTM option then appears on the Model Training page.
 
-## Kullanılan Teknolojiler
+### Data source
+Market data is downloaded live from Yahoo Finance via the [`yfinance`](https://pypi.org/project/yfinance/) library, so no dataset is stored in the repository.
 
-- **Python** — temel geliştirme dili
-- **Streamlit** — interaktif web arayüzü
-- **LSTM (derin öğrenme)** — zaman serisi fiyat tahmini
-- **Random Forest** — sınıflandırma tabanlı yön tahmini
-- **yfinance** — hisse, kripto ve BIST verisi
-- **scikit-learn** — model eğitimi ve değerlendirme
-- **Plotly** — interaktif grafikler
-- **fpdf2** — PDF rapor oluşturma
+---
 
-## Ekran Görüntüsü
+## 📌 Known Limitations
 
-*(Uygulamanın bir ekran görüntüsünü buraya ekleyebilirsiniz.)*
+- **Data licensing:** `yfinance` uses Yahoo Finance data intended for personal and educational use. A commercial product would need a licensed market-data provider.
+- **Forecast quality:** next-day direction forecasts on liquid markets are typically close to 50% accuracy. The tool is for analysis and learning, not for trading decisions.
+- **Session storage:** portfolio and alarms live in the browser session and reset when the session ends.
+- **Sentiment:** lexicon-based keyword scoring, not a trained language model; it does not understand negation or context.
 
-## Yasal Uyarı
+## ⚠️ Disclaimer
 
-Bu uygulama yalnızca bilgilendirme ve eğitim amaçlıdır; yatırım tavsiyesi
-niteliği taşımaz. Model tahminleri geçmiş verilere dayalı istatistiksel
-çıkarımlardır ve gelecekteki fiyat hareketlerini garanti etmez. Yatırım
-kararlarınızı vermeden önce bağımsız bir finansal danışmana başvurun.
+This application is for **educational and informational purposes only** and is **not investment advice**. Model outputs are statistical estimates based on past data and do not guarantee future price movements.
 
-## Lisans ve İletişim
+---
 
-Geliştirici: **Muazzez Doğru**
+## 🛠️ Tech Stack
 
-Sorularınız veya katkı önerileriniz için proje deposu üzerinden iletişime
-geçebilirsiniz.
+Python · Streamlit · scikit-learn · pandas · NumPy · Plotly · yfinance · fpdf2 · pytest · GitHub Actions · *(optional)* TensorFlow/Keras
+
+## 🇹🇷 Türkçe Özet
+
+**StockAI Pro**, ABD hisseleri, BIST 30 ve kripto paralar için teknik analiz ve makine öğrenmesi (Random Forest / Gradient Boosting) ile yön tahmini yapan bir karar destek panelidir. Backtest, portföy takibi, fiyat alarmı, haber duygu analizi ve PDF rapor içerir.
+
+Proje **62 otomatik testle** doğrulanır. Test sürecinde **10 hata** bulunup düzeltilmiştir; aralarında makine öğrenmesinde veri sızıntısı, backtest'te bir günlük kayma ve örnek haberlerin gerçek haber gibi gösterilmesi de vardır. Ayrıntılar için: [Bug Report](docs/BUG_REPORT.md).
+
+**Yatırım tavsiyesi değildir.**
+
+---
+
+*Started as a university course project (Yapay Zeka 2, Bilgisayar Programcılığı — Bergama MYO; original deliverables in [`docs/course-project`](docs/course-project)), then developed further by Muazzez Doğru: multi-market support, backtest metrics, portfolio, alarms, comparison, PDF export, UI redesign and the test suite.*
+
+**Developer:** Muazzez Doğru · [GitHub](https://github.com/Muazzezdgr)
