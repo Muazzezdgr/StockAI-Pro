@@ -4,7 +4,7 @@ cls
 echo.
 echo  ╔══════════════════════════════════════════════════════════╗
 echo  ║         StockAI Pro — Otomatik Kurulum ve Başlatma      ║
-echo  ║         Yapay Zeka 2 - C5 Final Projesi                 ║
+echo  ║         Hisse / Kripto / BIST Analiz Platformu          ║
 echo  ╚══════════════════════════════════════════════════════════╝
 echo.
 echo  [1/4] Python kontrol ediliyor...

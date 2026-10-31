@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Eğitilen modeller ve geçici çıktılar
+models/
+*.pkl
+
+# Gizli bilgiler
+.env
+.streamlit/secrets.toml
+
+# Editör / araç ayarları
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
