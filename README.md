@@ -53,8 +53,7 @@ utils/
 └── chart_theme.py, ui.py   Shared chart style and UI components
 tests/                  pytest suite (unit + Streamlit AppTest)
 docs/
-├── BUG_REPORT.md       Test findings: reproduction steps, root cause, fix
-└── course-project/     Original course deliverables (notebook, report, slides)
+└── BUG_REPORT.md       Test findings: reproduction steps, root cause, fix
 ```
 
 ---
@@ -127,6 +126,6 @@ Proje **62 otomatik testle** doğrulanır. Test sürecinde **10 hata** bulunup d
 
 ---
 
-*Started as a university course project (Yapay Zeka 2, Bilgisayar Programcılığı — Bergama MYO; original deliverables in [`docs/course-project`](docs/course-project)), then developed further by Muazzez Doğru: multi-market support, backtest metrics, portfolio, alarms, comparison, PDF export, UI redesign and the test suite.*
+*Designed and developed independently by Muazzez Doğru. The first version was built as the final project of the Yapay Zeka 2 course (Bilgisayar Programcılığı, Bergama MYO). Multi-market support, backtest metrics, portfolio, alarms, comparison, PDF export, the UI redesign and the test suite were added afterwards.*
 
 **Developer:** Muazzez Doğru · [GitHub](https://github.com/Muazzezdgr)
