@@ -12,8 +12,7 @@ An interactive decision-support dashboard for **US stocks, BIST 30 and major cry
 
 > 🧪 **QA focus:** 62 automated tests run on every push with GitHub Actions, without internet access, using synthetic price data. Testing uncovered **10 bugs**, including ML data leakage, a one-day misalignment in the backtest, and example news shown as real news. All are documented in the **[Bug Report](docs/BUG_REPORT.md)** and fixed.
 
-<!-- Ekran görüntüsü: canlı uygulamadan alıp docs/screenshots/dashboard.png olarak ekleyin -->
-<!-- ![Dashboard](docs/screenshots/dashboard.png) -->
+![Dashboard](docs/screenshots/01-dashboard.jpg)
 
 ---
 
@@ -39,6 +38,18 @@ An interactive decision-support dashboard for **US stocks, BIST 30 and major cry
 
 ---
 
+## 📸 Screenshots
+
+| Technical indicators | Model training |
+|---|---|
+| ![Indicators](docs/screenshots/02-indicators.jpg) | ![Model training](docs/screenshots/03-model-training.jpg) |
+| **Model evaluation** | **Backtest** |
+| ![Evaluation](docs/screenshots/04-model-evaluation.jpg) | ![Backtest](docs/screenshots/05-backtest.jpg) |
+
+<sub>Screenshots are from v2.0, before the fixes listed in the [bug report](docs/BUG_REPORT.md); the current version has a refined UI. The low accuracy on the model screen (45%) is shown honestly: next-day direction is hard to predict.</sub>
+
+---
+
 ## 🏗️ Project Structure
 
 ```
@@ -53,7 +64,8 @@ utils/
 └── chart_theme.py, ui.py   Shared chart style and UI components
 tests/                  pytest suite (unit + Streamlit AppTest)
 docs/
-└── BUG_REPORT.md       Test findings: reproduction steps, root cause, fix
+├── BUG_REPORT.md       Test findings: reproduction steps, root cause, fix
+└── screenshots/
 ```
 
 ---
