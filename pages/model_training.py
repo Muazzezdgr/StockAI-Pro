@@ -9,7 +9,7 @@ import numpy as np
 
 from utils.data_utils import fetch_stock_data, prepare_rf_data, prepare_lstm_data
 from utils.model_utils import (train_random_forest, evaluate_model,
-                                get_feature_importance, train_lstm)
+                                get_feature_importance, train_lstm, lstm_kullanilabilir)
 
 C = {"bg":"#0a0e1a","s1":"#111827","s2":"#1a2235","border":"#1e2d45",
      "accent":"#00d4ff","purple":"#7c3aed","green":"#10b981",
@@ -63,24 +63,25 @@ def show_model_training(symbol, period, window_size, interval="1d"):
                 color:{C['muted']};line-height:1.8;">
       <b style="color:{C['accent']}">Adım 3 — Model Geliştirme:</b>
       Veri <b style="color:{C['text']}">%80 eğitim / %20 test</b> olarak ayrılır.
-      Random Forest ve isteğe bağlı LSTM modeli eğitilir, karşılaştırılır.
+      Random Forest / Gradient Boosting (TensorFlow kuruluysa LSTM) eğitilir ve karşılaştırılır.
       Hiperparametreler (ağaç sayısı, derinlik) ayarlanabilir.
     </div>""", unsafe_allow_html=True)
 
     # ── Kontroller ───────────────────────────────────────────────────────────
     c1, c2, c3 = st.columns([2, 1, 1])
     with c1:
-        model_choice = st.selectbox("🤖 Model Seç", [
-            "Random Forest",
-            "Gradient Boosting",
-            "LSTM (Derin Öğrenme)",
-        ])
+        secenekler = ["Random Forest", "Gradient Boosting"]
+        if lstm_kullanilabilir():
+            secenekler.append("LSTM (Derin Öğrenme)")
+        model_choice = st.selectbox("🤖 Model Seç", secenekler)
+        if not lstm_kullanilabilir():
+            st.caption("LSTM seçeneği, TensorFlow kurulu yerel ortamda görünür.")
     with c2:
         n_est = st.slider("Ağaç Sayısı", 50, 500, 200, 50)
     with c3:
         max_depth = st.slider("Max Derinlik", 4, 20, 10, 2)
 
-    if not st.button("🚀  MODELİ EĞİT", use_container_width=True):
+    if not st.button("🚀  MODELİ EĞİT", width="stretch"):
         st.info("ℹ️  Model seçin ve MODELİ EĞİT butonuna tıklayın.")
         return
 
@@ -175,7 +176,7 @@ def _train_show_rf(df, n_est, max_depth, is_gb=False):
             yaxis=dict(autorange="reversed", gridcolor=C["border"], showgrid=False),
             hoverlabel=dict(bgcolor=C["s2"], font_color=C["text"], font_family="Space Mono"),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # ── ROC Eğrisi ────────────────────────────────────────────────────────────
     with cr:
@@ -191,7 +192,7 @@ def _train_show_rf(df, n_est, max_depth, is_gb=False):
             name="Rastgele (0.5)"))
         fig.update_layout(**_base_layout(
             f"<b>ROC Eğrisi</b> — {label}", height=430))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # ── Confusion Matrix ──────────────────────────────────────────────────────
     cm     = metrics["confusion_matrix"]
@@ -216,7 +217,7 @@ def _train_show_rf(df, n_est, max_depth, is_gb=False):
         yaxis=dict(title="Gerçek",  gridcolor=C["border"]),
         hoverlabel=dict(bgcolor=C["s2"], font_color=C["text"], font_family="Space Mono"),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     # ── Rapor Tablosu ─────────────────────────────────────────────────────────
     st.markdown(f"""
@@ -321,7 +322,7 @@ def _train_show_lstm(df, window_size):
             "<b>LSTM Eğitim Eğrisi</b>", height=380,
             xaxis=dict(title="Epoch", gridcolor=C["border"]),
         ))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # ── LSTM Mimari Gösterimi ──────────────────────────────────────────────────
     st.markdown(f"""

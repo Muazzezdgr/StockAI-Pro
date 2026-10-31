@@ -68,14 +68,14 @@ def show_alarms():
     col1, col2 = st.columns([1, 3])
 
     with col1:
-        if st.button("Kontrol Et", key="check_alarms", use_container_width=True):
+        if st.button("Kontrol Et", key="check_alarms", width="stretch"):
             with st.spinner("Alarmlar kontrol ediliyor..."):
                 triggered_indices = check_alarms()
             if triggered_indices:
                 st.session_state["_last_triggered"] = triggered_indices
 
     with col2:
-        if st.button("Sayfayi Yenile", key="refresh_page", use_container_width=True):
+        if st.button("Sayfayi Yenile", key="refresh_page", width="stretch"):
             st.rerun()
 
     if "alarms" in st.session_state and any(a["status"] == "tetiklendi" for a in st.session_state["alarms"]):
@@ -103,7 +103,7 @@ def show_alarms():
 
         with c4:
             section_gap("lg")
-            submitted = st.form_submit_button("Alarm Ekle", use_container_width=True)
+            submitted = st.form_submit_button("Alarm Ekle", width="stretch")
 
         if submitted:
             symbol = symbol.strip().upper()
@@ -193,7 +193,7 @@ def show_alarms():
         with cols[5]:
             st.text(row["Olustu"])
         with cols[6]:
-            if st.button("Sil", key=f"delete_{row['idx']}", use_container_width=True):
+            if st.button("Sil", key=f"delete_{row['idx']}", width="stretch"):
                 st.session_state["alarms"].pop(row["idx"])
                 st.rerun()
 

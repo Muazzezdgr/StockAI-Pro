@@ -155,7 +155,7 @@ def show_comparison(period, interval):
     with col_b:
         symbol_b = _symbol_picker("B", "Kripto Para", "BTC-USD")
 
-    run = st.button("KARSILASTIR", use_container_width=True, key="cmp_run")
+    run = st.button("KARSILASTIR", width="stretch", key="cmp_run")
 
     if not run:
         st.markdown(f"""
@@ -217,7 +217,7 @@ def show_comparison(period, interval):
     fig.update_layout(**pl(f"<b>{a['symbol']} vs {b['symbol']}</b> - Yuzde Degisim (Normalize)",
                            height=430, y_title="Yuzde Degisim (%)"),
                       hovermode="x unified", dragmode="zoom")
-    st.plotly_chart(fig, use_container_width=True,
+    st.plotly_chart(fig, width="stretch",
                      config=modebar_config(f"{a['symbol']}_vs_{b['symbol']}"))
 
     # -- Metrik karsilastirma tablosu ------------------------------------------

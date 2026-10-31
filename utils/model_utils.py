@@ -1,10 +1,33 @@
 """
-utils/model_utils.py  –  LSTM + Random Forest eğitim & değerlendirme
+utils/model_utils.py  –  Random Forest / Gradient Boosting (+ isteğe bağlı LSTM) eğitim & değerlendirme
+
+LSTM, sadece TensorFlow kurulu ortamlarda kullanılabilir. Streamlit Cloud sürümünde
+TensorFlow kurulu değildir; bu durumda arayüz LSTM seçeneğini göstermez.
 """
+import importlib.util
 import numpy as np, pickle, os
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import (accuracy_score, classification_report,
                               confusion_matrix, roc_auc_score, roc_curve)
+
+def lstm_kullanilabilir() -> bool:
+    """TensorFlow kurulu mu? (LSTM seçeneğini göstermek için)"""
+    return importlib.util.find_spec("tensorflow") is not None
+
+
+def yarin_icin_tahmin(df, n_estimators=80) -> float:
+    """
+    En son günün göstergeleriyle ERTESİ GÜN için 'yükseliş' olasılığını döndürür.
+
+    BUG-06: Eski kod X_test'in son satırını kullanıyordu. O satır son günden bir
+    önceki güne aittir ve sonucu zaten bilinen bir hareketi "tahmin" ediyordu.
+    """
+    from utils.data_utils import FEATURES, prepare_rf_data
+    X_train, _, y_train, _, scaler, _ = prepare_rf_data(df)
+    model = train_random_forest(X_train, y_train, n_estimators=n_estimators)
+    son_gun = scaler.transform(df[FEATURES].iloc[[-1]])
+    return float(model.predict_proba(son_gun)[0][1])
+
 
 def train_random_forest(X_train, y_train, n_estimators=200, max_depth=8):
     model = RandomForestClassifier(

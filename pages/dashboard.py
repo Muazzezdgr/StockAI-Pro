@@ -12,7 +12,8 @@ from datetime import datetime
 from utils.data_utils import (fetch_stock_data, get_ticker_info,
     format_market_cap, compute_signal, prepare_rf_data)
 from utils.sentiment_utils import fetch_news, aggregate_sentiment
-from utils.model_utils import train_random_forest, evaluate_model, get_feature_importance
+from utils.model_utils import (train_random_forest, evaluate_model, get_feature_importance,
+                                yarin_icin_tahmin)
 from utils.pdf_report import generate_pdf_report
 from utils.chart_theme import (COLORS as C, FONT_FAMILY, PLOT_BG,
     LINE_HAIR, LINE_THIN, LINE_REG, LINE_MAIN, BORDER_SOFT, BORDER_FAINT,
@@ -190,7 +191,7 @@ def _disclaimer_note():
           Bu platform egitim ve bilgilendirme amaclidir, yatirim tavsiyesi degildir.
         </div>""", unsafe_allow_html=True)
     with link_col:
-        if st.button("Yasal Uyari", key="dashboard_disclaimer_link", use_container_width=True):
+        if st.button("Yasal Uyari", key="dashboard_disclaimer_link", width="stretch"):
             st.session_state["nav_redirect"] = "Yasal Uyari"
             st.rerun()
 
@@ -273,7 +274,7 @@ def _pdf_export_button(symbol, info, df, last, change, rsi_v, macd_h,
             data=pdf_bytes,
             file_name=f"{symbol}_StockAI_Rapor_{last_update.strftime('%Y%m%d_%H%M')}.pdf",
             mime="application/pdf",
-            use_container_width=True,
+            width="stretch",
         )
     except Exception:
         st.warning("PDF rapor olusturulamadi. Lutfen tekrar deneyin.")
@@ -348,7 +349,7 @@ def _price_chart(df, symbol):
     fig.update_yaxes(title_text="Fiyat (USD)", row=1, col=1)
     fig.update_yaxes(title_text="Hacim",       row=2, col=1)
 
-    st.plotly_chart(fig, use_container_width=True,
+    st.plotly_chart(fig, width="stretch",
                      config=modebar_config(f"{symbol}_chart"))
 
 
@@ -369,7 +370,7 @@ def _indicator_charts(df):
         fig.update_layout(**pl("<b>RSI</b> (14)", height=320, show_legend=False,
                                 margin=dict(l=42, r=20, t=52, b=30)),
                           hovermode="x", dragmode="zoom")
-        st.plotly_chart(fig, use_container_width=True, config=chart_config)
+        st.plotly_chart(fig, width="stretch", config=chart_config)
 
     with c2:
         fig = go.Figure()
@@ -387,7 +388,7 @@ def _indicator_charts(df):
                                 margin=dict(l=42, r=20, t=52, b=78),
                                 legend=bottom_legend(y=-0.55)),
                           hovermode="x unified", dragmode="zoom")
-        st.plotly_chart(fig, use_container_width=True, config=chart_config)
+        st.plotly_chart(fig, width="stretch", config=chart_config)
 
 
 # ── Model Analizi ─────────────────────────────────────────────────────────────
@@ -456,7 +457,7 @@ def _model_analysis(df):
             hoverlabel=hover_style(),
         )
         chart_config = modebar_config("feature_importance")
-        st.plotly_chart(fig, use_container_width=True, config=chart_config)
+        st.plotly_chart(fig, width="stretch", config=chart_config)
 
     # ── ROC Eğrisi ────────────────────────────────────────────────────────────
     with cr:
@@ -474,7 +475,7 @@ def _model_analysis(df):
             name="Rastgele (0.5)", hoverinfo="skip"))
         fig.update_layout(**pl("<b>ROC Eğrisi</b>", height=430),
                           hovermode="closest", dragmode="zoom")
-        st.plotly_chart(fig, use_container_width=True, config=chart_config)
+        st.plotly_chart(fig, width="stretch", config=chart_config)
 
     # ── Confusion Matrix ──────────────────────────────────────────────────────
     cm     = metrics["confusion_matrix"]
@@ -506,7 +507,7 @@ def _model_analysis(df):
                     showgrid=False, tickfont=dict(size=TICK_SIZE, color=C["muted"])),
         hoverlabel=hover_style(),
     )
-    st.plotly_chart(fig, use_container_width=True, config=chart_config)
+    st.plotly_chart(fig, width="stretch", config=chart_config)
 
     # ── Sınıflandırma Raporu tablosu ──────────────────────────────────────────
     st.markdown(f"""
@@ -581,7 +582,12 @@ def _news_section(news, agg):
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",
                       font=dict(color=C["text"], family=FONT_FAMILY),
                       height=220, margin=dict(l=20, r=20, t=50, b=10))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
+
+    if any(n.get("demo") for n in news):
+        st.warning("🧪 **Örnek haberler gösteriliyor.** Gerçek haber ve duygu analizi için "
+                       "`NEWSAPI_KEY` tanımlanmalıdır. Aşağıdaki başlıklar ve skorlar gerçek "
+                       "piyasa duyarlılığını yansıtmaz.")
 
     for n in news:
         lbl   = n["sentiment"]["label"]
@@ -647,7 +653,7 @@ def _corr_chart(df):
         ),
         hoverlabel=hover_style(),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     # Yüksek korelasyon yorumu
     high = [(corr.columns[i], corr.columns[j], corr.iloc[i,j])
@@ -678,18 +684,17 @@ def _corr_chart(df):
 
 # ── Hızlı tahmin ──────────────────────────────────────────────────────────────
 def _quick_predict(df):
+    """Son günün verisiyle yarının yükseliş olasılığı (hesaplama: utils/model_utils.py)."""
     try:
-        X_train,X_test,y_train,_,_,_ = prepare_rf_data(df)
-        m = train_random_forest(X_train, y_train, n_estimators=80)
-        return float(m.predict_proba(X_test[-1:])[0][1])
-    except:
+        return yarin_icin_tahmin(df)
+    except Exception:
         return 0.5
 
 
 # ── Karşılama ─────────────────────────────────────────────────────────────────
 def _welcome():
-    items = [("🤖","LSTM + RF\nModelleri"),("📊","21 Teknik\nGösterge"),
-             ("📰","Haber\nDuygu NLP"),("🌍","BIST + ABD\nPiyasaları"),
+    items = [("🤖","RF + GB\nModelleri"),("📊","21 Teknik\nGösterge"),
+             ("📰","Haber\nDuygu Analizi"),("🌍","BIST + ABD\nPiyasaları"),
              ("📈","Backtest\nSimülasyon")]
     cards = "".join(
         f'<div class="welcome-feature-card">'

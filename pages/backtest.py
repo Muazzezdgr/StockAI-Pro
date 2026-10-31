@@ -4,9 +4,9 @@ Değerlendirme: Canlı demo / kullanıcı etkileşimi
 """
 import streamlit as st
 import plotly.graph_objects as go
-import numpy as np
 
-from utils.data_utils import fetch_stock_data, prepare_rf_data
+from utils.backtest_utils import fiyatlari_hizala, periods_per_year, run_backtest
+from utils.data_utils import fetch_stock_data, is_crypto_symbol, prepare_rf_data
 from utils.model_utils import train_random_forest
 from utils.chart_theme import (COLORS as C, FONT_FAMILY, PLOT_BG,
     LINE_THIN, LINE_MAIN, TITLE_SIZE, BORDER_SOFT, BORDER_FAINT, base_axis,
@@ -30,7 +30,7 @@ def show_backtest(symbol, period, interval="1d"):
     thresh   = c2.slider("📊 Alım Eşiği (Model Güven %)", 50, 80, 60)
     stoploss = c3.slider("🛑 Stop Loss (%)", 1, 20, 5)
 
-    if not st.button("▶  BACKTEST ÇALIŞTIR", use_container_width=True):
+    if not st.button("▶  BACKTEST ÇALIŞTIR", width="stretch"):
         st.info("ℹ️  Parametreleri ayarlayıp BACKTEST ÇALIŞTIR butonuna tıklayın.")
         return
 
@@ -46,90 +46,15 @@ def show_backtest(symbol, period, interval="1d"):
         st.error(f"Veri saglaycisina ulasilamadi. Lutfen birkac dakika sonra tekrar deneyin.")
         return
 
-    split  = int(len(df) * 0.8)
-    n      = min(len(probs), len(df) - split)
-    prices = df["Close"].iloc[split:split+n].values
-    probs  = probs[:n]
-
-    # ── Backtest simülasyonu ──────────────────────────────────────────────────
-    capital   = float(initial)
-    position  = 0.0
-    portfolio = []
-    buy_hold  = [float(initial) / prices[0] * p for p in prices]
-    trades    = 0
-    wins      = 0
-    entry_price = 0.0
-    trade_log = []
-
-    for i, (price, prob) in enumerate(zip(prices, probs)):
-        # Alım sinyali
-        if prob > thresh/100 and position == 0:
-            position    = capital / price
-            capital     = 0.0
-            entry_price = price
-            trades     += 1
-
-        # Satım sinyali veya stop-loss
-        elif position > 0:
-            loss_pct = (price - entry_price) / entry_price * 100
-            if prob < (1 - thresh/100) or loss_pct < -stoploss:
-                capital  = position * price
-                won      = price > entry_price
-                wins    += int(won)
-                trade_log.append({
-                    "gün": i,
-                    "giriş": entry_price,
-                    "çıkış": price,
-                    "kar": (price-entry_price)/entry_price*100,
-                    "sonuç": "✅ Kar" if won else "❌ Zarar",
-                })
-                position = 0.0
-
-        portfolio.append(capital + position * price)
-
-    # Son açık pozisyonu kapat
-    if position > 0:
-        portfolio[-1] = position * prices[-1]
-
-    final_m  = portfolio[-1]
-    final_bh = buy_hold[-1]
-    ret_m    = (final_m  - initial) / initial * 100
-    ret_bh   = (final_bh - initial) / initial * 100
-    win_rate = (wins / trades * 100) if trades > 0 else 0
-
-    # Period length (days) used for annualization and Sharpe calculation
-    period_days = len(portfolio)
-
-    # Annualized return (assume daily data -> 252 trading days per year)
-    if period_days > 0 and initial > 0:
-        try:
-            ann_return = (final_m / initial) ** (252.0 / max(period_days, 1)) - 1.0
-        except Exception:
-            ann_return = None
-    else:
-        ann_return = None
-
-    # Sharpe Ratio (assume risk-free rate = 0). Use daily returns and annualize.
-    sharpe = None
-    if len(portfolio) > 1:
-        arr = np.array(portfolio, dtype=float)
-        daily_rets = np.diff(arr) / arr[:-1]
-        if daily_rets.size > 1:
-            mean_d = daily_rets.mean()
-            std_d = daily_rets.std(ddof=1)
-            if std_d > 0:
-                sharpe = (mean_d / std_d) * np.sqrt(252.0)
-            else:
-                sharpe = None
-        else:
-            sharpe = None
-    else:
-        sharpe = None
-
-    # Max drawdown
-    peak = np.maximum.accumulate(portfolio)
-    dd   = (np.array(portfolio) - peak) / peak * 100
-    max_dd = float(dd.min())
+    # Hesaplama utils/backtest_utils.py içinde yapılır ve birim testlerle doğrulanır.
+    prices = fiyatlari_hizala(df, len(probs))
+    sonuc = run_backtest(prices, probs[:len(prices)], initial=initial,
+                         thresh_pct=thresh, stoploss_pct=stoploss,
+                         periods_per_year=periods_per_year(interval, is_crypto_symbol(symbol)))
+    portfolio, buy_hold = sonuc["portfolio"], sonuc["buy_hold"]
+    trades, win_rate, trade_log = sonuc["trades"], sonuc["win_rate"], sonuc["trade_log"]
+    ret_m, ret_bh = sonuc["ret_m"], sonuc["ret_bh"]
+    ann_return, sharpe, max_dd = sonuc["ann_return"], sonuc["sharpe"], sonuc["max_dd"]
 
     # ── Sonuç kartları ────────────────────────────────────────────────────────
     mc1,mc2,mc3,mc4,mc5 = st.columns(5)
@@ -199,7 +124,7 @@ def show_backtest(symbol, period, interval="1d"):
         hovermode="x unified",
         hoverlabel=hover_style(),
     )
-    st.plotly_chart(fig, use_container_width=True, config=modebar_config(f"{symbol}_backtest"))
+    st.plotly_chart(fig, width="stretch", config=modebar_config(f"{symbol}_backtest"))
 
     # ── İşlem geçmişi ─────────────────────────────────────────────────────────
     if trade_log:

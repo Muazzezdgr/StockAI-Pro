@@ -186,8 +186,14 @@ def prepare_lstm_data(df: pd.DataFrame, window: int = 30, test_ratio: float = 0.
         scaled = scaler.fit_transform(feat_df)
         return np.empty((0, window, scaled.shape[1])), np.empty((0, window, scaled.shape[1])), np.array([]), np.array([]), scaler
 
+    # Ölçekleyici sadece eğitim bölümüne fit edilir; test verisinin min/max
+    # değerleri eğitime sızmamalı (BUG-01: veri sızıntısı).
+    n_windows = len(feat_df) - window
+    split = int(n_windows * (1 - test_ratio))
+    egitim_son = split + window - 1  # son eğitim penceresinin kapsadığı satır sayısı
     scaler = MinMaxScaler()
-    scaled = scaler.fit_transform(feat_df)
+    scaler.fit(feat_df.iloc[:egitim_son])
+    scaled = scaler.transform(feat_df)
 
     X, y = [], []
     for i in range(window, len(scaled)):
@@ -195,9 +201,6 @@ def prepare_lstm_data(df: pd.DataFrame, window: int = 30, test_ratio: float = 0.
         y.append(target.iloc[i])
 
     X, y = np.array(X), np.array(y)
-    if len(X) == 0:
-        return np.empty((0, window, scaled.shape[1])), np.empty((0, window, scaled.shape[1])), np.array([]), np.array([]), scaler
-    split = int(len(X) * (1 - test_ratio))
     return X[:split], X[split:], y[:split], y[split:], scaler
 
 
@@ -209,11 +212,11 @@ def prepare_rf_data(df: pd.DataFrame, test_ratio: float = 0.2):
     feat_df = df[FEATURES].copy().iloc[:-1]
     target  = target.iloc[:-1]
 
+    split = int(len(feat_df) * (1 - test_ratio))
     scaler = StandardScaler()
-    X = scaler.fit_transform(feat_df)
+    scaler.fit(feat_df.iloc[:split])  # sadece eğitim verisi (BUG-01: veri sızıntısı)
+    X = scaler.transform(feat_df)
     y = target.values
-
-    split = int(len(X) * (1 - test_ratio))
     return X[:split], X[split:], y[:split], y[split:], scaler, feat_df.columns.tolist()
 
 

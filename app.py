@@ -1,5 +1,6 @@
 
 import streamlit as st
+from utils.model_utils import lstm_kullanilabilir
 
 st.set_page_config(
     page_title="StockAI Pro — Hisse Tahmin Sistemi",
@@ -276,7 +277,7 @@ div[data-testid="stExpander"] {
 # ── Sidebar Navigation ───────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown('<div class="logo-text">STOCK AI PRO</div>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#64748b;font-size:0.75rem;margin-top:4px;font-family:Space Mono,monospace;">v2.0 — LSTM + RF + NLP</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#64748b;font-size:0.75rem;margin-top:4px;font-family:Space Mono,monospace;">v2.1 — Random Forest · Gradient Boosting · Duygu Analizi</p>', unsafe_allow_html=True)
     # Sidebar summary: portfolio total and active alarms (quick glance)
     try:
         total_portfolio = 0.0
@@ -329,13 +330,14 @@ with st.sidebar:
     selected_period = st.selectbox("Veri Periyodu", ["1h", "1y", "2y", "3y", "5y"], index=1)
     interval = "1h" if selected_period == "1h" else "1d"
     effective_period = "2y" if interval == "1h" else selected_period
-    window_size = st.slider("LSTM Pencere Boyutu", 20, 60, 30)
+    # LSTM sadece TensorFlow kuruluysa sunulur (Streamlit Cloud sürümünde yoktur)
+    window_size = st.slider("LSTM Pencere Boyutu", 20, 60, 30) if lstm_kullanilabilir() else 30
 
     if selected_period == "1h":
         st.info("⚠️ Saatlik veri daha güncel sinyaller verir ancak kısa vadeli gürültüye (noise) daha duyarlıdır; model güven skorunu buna göre yorumlayın.")
 
     st.markdown("---")
-    if st.button("🚀  ANALİZİ BAŞLAT", use_container_width=True):
+    if st.button("🚀  ANALİZİ BAŞLAT", width="stretch"):
         st.session_state["analysis_active"] = True
     # analysis_active session_state'te tutulur, boylece dashboard uzerindeki
     # otomatik yenileme gibi diger widget etkilesimleri sayfayi karsilama

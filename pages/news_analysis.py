@@ -60,7 +60,7 @@ def show_news_analysis(symbol):
             height=80, label_visibility="collapsed")
     with col_btn:
         st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-        analyze_clicked = st.button("🔍 ANALİZ ET", use_container_width=True)
+        analyze_clicked = st.button("🔍 ANALİZ ET", width="stretch")
 
     if analyze_clicked and custom.strip():
         r     = analyze_sentiment_lexicon(custom)
@@ -112,6 +112,11 @@ def show_news_analysis(symbol):
         news = []
         agg = {"positive": 0, "negative": 0, "neutral": 0, "avg_score": 0.0}
 
+    if agg.get("demo"):
+        st.warning("🧪 **Örnek haberler gösteriliyor.** Gerçek haber ve duygu analizi için "
+                   "`NEWSAPI_KEY` tanımlanmalıdır. Aşağıdaki başlıklar ve skorlar gerçek "
+                   "piyasa duyarlılığını yansıtmaz.")
+
     # Özet metrikler
     c1,c2,c3,c4 = st.columns(4)
     _card(c1, "📊 Ort. Skor",  f"{agg['avg_score']:+.2f}",
@@ -150,7 +155,7 @@ def show_news_analysis(symbol):
         fig.update_layout(paper_bgcolor="rgba(0,0,0,0)",
                           font=dict(color=C["text"],family="Space Mono"),
                           height=250, margin=dict(l=20,r=20,t=55,b=10))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # Pasta grafiği
     with col_pie:
@@ -176,7 +181,7 @@ def show_news_analysis(symbol):
                           height=250, margin=dict(l=10,r=10,t=45,b=10),
                           legend=dict(bgcolor="rgba(26,34,53,0.85)",
                                       bordercolor=C["border"],borderwidth=1))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # ── Haber Kartları ────────────────────────────────────────────────────────
     st.markdown(f"""

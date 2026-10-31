@@ -37,7 +37,7 @@ def show_portfolio():
             buy_price = st.number_input("Alış Fiyatı", min_value=0.0, step=1.0, format="%.6f")
         with c4:
             section_gap("lg")
-            submitted = st.form_submit_button("➕ Portföye Ekle", use_container_width=True)
+            submitted = st.form_submit_button("➕ Portföye Ekle", width="stretch")
 
         if submitted:
             symbol = symbol.strip()
@@ -145,7 +145,7 @@ def show_portfolio():
             return f"color: {C['text']}"
 
         styler = styler.map(color_pnl, subset=["Kar/Zarar (₺)", "Kar/Zarar (%)"])
-        st.dataframe(styler, use_container_width=True, hide_index=True)
+        st.dataframe(styler, width="stretch", hide_index=True)
 
     section_gap("md")
     delete_col, delete_btn = st.columns([3, 1])
@@ -154,7 +154,7 @@ def show_portfolio():
         selected_to_delete = st.selectbox("Silinecek varlık", symbols, key="delete_symbol")
     with delete_btn:
         section_gap("lg")
-        if st.button("🗑️ Sil", use_container_width=True):
+        if st.button("🗑️ Sil", width="stretch"):
             st.session_state["portfolio"] = [item for item in portfolio if item["symbol"] != selected_to_delete]
             st.success(f"✅  {selected_to_delete} portföyden kaldırıldı.")
             st.rerun()
